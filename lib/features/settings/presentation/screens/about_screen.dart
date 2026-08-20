@@ -1,16 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/platform/update_checker_provider.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/app_card.dart';
 
-/// About screen: app identity, version, and a short privacy blurb.
-class AboutScreen extends StatelessWidget {
+/// About screen: app identity, version, update status, and a short
+/// privacy blurb.
+class AboutScreen extends ConsumerWidget {
   const AboutScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final updateAsync = ref.watch(updateCheckProvider);
+
     return Scaffold(
       appBar: AppBar(title: const Text('About')),
       body: ListView(
@@ -58,6 +64,65 @@ class AboutScreen extends StatelessWidget {
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
               ],
+            ),
+          ),
+          const SizedBox(height: AppSpacing.lg),
+          Text(
+            'Software Update',
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          AppCard(
+            child: updateAsync.when(
+              loading: () => const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                  SizedBox(width: AppSpacing.sm),
+                  Text('Checking for updates…'),
+                ],
+              ),
+              error: (_, __) => const Text('Unable to check for updates.'),
+              data: (info) {
+                if (info == null) {
+                  return const Row(
+                    children: [
+                      Icon(
+                        Icons.check_circle_outline,
+                        color: AppColors.primary,
+                      ),
+                      SizedBox(width: AppSpacing.sm),
+                      Text('You\'re on the latest version.'),
+                    ],
+                  );
+                }
+                return Row(
+                  children: [
+                    const Icon(
+                      Icons.system_update_alt,
+                      color: AppColors.liability,
+                    ),
+                    const SizedBox(width: AppSpacing.sm),
+                    Expanded(
+                      child: Text(
+                        'Version ${info.latestVersion} is available '
+                        '(you have ${info.currentVersion}).',
+                      ),
+                    ),
+                    FilledButton(
+                      onPressed: () => launchUrl(
+                        Uri.parse(info.apkDownloadUrl ?? info.releaseUrl),
+                        mode: LaunchMode.externalApplication,
+                      ),
+                      child: const Text('Update'),
+                    ),
+                  ],
+                );
+              },
             ),
           ),
           const SizedBox(height: AppSpacing.lg),

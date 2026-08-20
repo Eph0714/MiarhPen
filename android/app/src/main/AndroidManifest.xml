@@ -95,5 +95,13 @@
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
         </intent>
+        <!-- url_launcher: lets Android 11+ resolve a browser for the
+             "Update available" banner/button's link to the GitHub release
+             page, without which canLaunchUrl/launchUrl can silently fail
+             package-visibility checks. -->
+        <intent>
+            <action android:name="android.intent.action.VIEW"/>
+            <data android:scheme="https"/>
+        </intent>
     </queries>
 </manifest>
