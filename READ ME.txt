@@ -1,0 +1,31 @@
+Release APK built successfully ✅
+
+File: C:\Users\Ephraim\Desktop\MiarhPen\build\app\outputs\flutter-apk\app-release.apk (52.7 MB)
+
+How to get it onto your phone:
+
+Easiest: plug your phone into this PC via USB, enable file transfer, and copy app-release.apk to your phone's Downloads folder. Or upload it to Google Drive/email it to yourself and download on the phone.
+How to install:
+
+On your phone, open the file (via Files app / Downloads / whatever received it).
+Android will likely block it the first time with "For your security, this app was blocked" — tap Settings in that prompt, then enable Allow from this source for the app you opened it with, and go back to install.
+Tap Install → Open.
+Credentials: none pre-set — there's no seeded login. First launch takes you straight into the setup wizard where you create your own username and password, plus pick your currency (defaults to ₱ PHP), your first accounting period, and your starting accounts (Cash, GCash, bank, etc.) with their beginning balances. Whatever you enter there becomes your login going forward.
+
+Let me know how it goes on your device, and I'm happy to keep iterating on anything you find.
+
+
+ON IPHONE:
+Why: Apple only allows building/signing iOS apps on macOS with Xcode. That's an Apple platform restriction, not a Flutter limitation — there is no tool, flag, or workaround on Windows that produces an installable iOS build. I genuinely can't do this from here.
+
+Your options:
+
+Use a Mac you (or someone you know) has access to. Copy the MiarhPen project folder over, then on the Mac:
+
+Install Xcode + Flutter, run flutter pub get, then flutter build ipa (needs an Apple Developer account, free tier works for sideloading to your own device for 7 days, paid $99/yr for permanent installs/TestFlight).
+Or simplest for just testing on your own iPhone: open ios/Runner.xcworkspace in Xcode, plug your iPhone into the Mac via cable, select it as the run target, sign in with your Apple ID under Xcode's Signing & Capabilities, hit Run — installs directly, no App Store needed.
+No Mac available — use a cloud Mac build service (Codemagic, Bitrise, GitHub Actions with a macos-latest runner, etc.). These build the IPA for you from the same source and can push straight to TestFlight or give you a signed install link. I can help set up a codemagic.yaml/GitHub Actions workflow for this if you want to go that route — just say so.
+
+Rent a Mac in the cloud (MacStadium, MacinCloud) if it's a one-off.
+
+Want me to prep a CI config (Codemagic or GitHub Actions) so building the iOS version becomes a push-button thing once you have access to one of those?
