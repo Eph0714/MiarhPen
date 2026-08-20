@@ -17,7 +17,9 @@ void main() {
     // without depending on native I/O.
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [currentUserProvider.overrideWith((ref) async => null)],
+        overrides: [
+          currentUserProvider.overrideWith((ref) => Stream.value(null)),
+        ],
         child: const MiarhPenApp(),
       ),
     );

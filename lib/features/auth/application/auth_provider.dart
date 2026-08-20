@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/constants/app_constants.dart';
 import '../../../core/db/daos/user_dao.dart';
+import '../../../core/db/db_change_notifier.dart';
 import '../../../core/security/biometric_service.dart';
 import '../../../core/security/password_hasher.dart';
 import '../../../core/security/pin_service.dart';
@@ -10,8 +11,19 @@ import '../domain/user.dart';
 
 final userDaoProvider = Provider<UserDao>((ref) => UserDao());
 
-final currentUserProvider = FutureProvider<AppUser?>((ref) {
-  return ref.watch(userDaoProvider).getFirstUser();
+/// A [StreamProvider] (not a plain `FutureProvider`) so it actually
+/// notices when the `users` table changes elsewhere — e.g. logout
+/// clearing every user's "Remember Me" flag. A `FutureProvider` only ever
+/// fetches once and caches that result for the rest of the app's
+/// lifetime; the router's redirect logic reading a permanently-stale
+/// cached value was exactly why logging out appeared to silently log the
+/// user straight back in (`rememberedUserProvider` still reported the old
+/// remembered user even after the DB write that cleared it).
+final currentUserProvider = StreamProvider<AppUser?>((ref) {
+  final dao = ref.watch(userDaoProvider);
+  return DbChangeNotifier.instance
+      .watch(DbTable.users)
+      .asyncMap((_) => dao.getFirstUser());
 });
 
 /// The one user (if any) currently flagged for "Remember Me" auto-login.
@@ -19,9 +31,13 @@ final currentUserProvider = FutureProvider<AppUser?>((ref) {
 /// [AuthController]'s own best-effort background attempt) so a
 /// remembered session is restored deterministically on cold start,
 /// without depending on a detached microtask racing the router's first
-/// redirect evaluation.
-final rememberedUserProvider = FutureProvider<AppUser?>((ref) {
-  return ref.watch(userDaoProvider).getRememberedUser();
+/// redirect evaluation. See [currentUserProvider] for why this has to be
+/// a [StreamProvider] rather than a `FutureProvider`.
+final rememberedUserProvider = StreamProvider<AppUser?>((ref) {
+  final dao = ref.watch(userDaoProvider);
+  return DbChangeNotifier.instance
+      .watch(DbTable.users)
+      .asyncMap((_) => dao.getRememberedUser());
 });
 
 /// Kept alive app-wide — session state must persist regardless of which
