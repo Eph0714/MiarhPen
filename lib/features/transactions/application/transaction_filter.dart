@@ -100,12 +100,12 @@ class TransactionFilter {
 
   @override
   int get hashCode => Object.hash(
-        dateFrom,
-        dateTo,
-        accountId,
-        categoryId,
-        type,
-        searchText,
-        preset,
-      );
+    dateFrom,
+    dateTo,
+    accountId,
+    categoryId,
+    type,
+    searchText,
+    preset,
+  );
 }

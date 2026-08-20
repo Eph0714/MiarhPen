@@ -18,10 +18,10 @@ class AccountBalanceRecalculator {
     AccountingPeriodDao? accountingPeriodDao,
     TransactionDao? transactionDao,
     TransferDao? transferDao,
-  })  : _accountDao = accountDao ?? AccountDao(),
-        _accountingPeriodDao = accountingPeriodDao ?? AccountingPeriodDao(),
-        _transactionDao = transactionDao ?? TransactionDao(),
-        _transferDao = transferDao ?? TransferDao();
+  }) : _accountDao = accountDao ?? AccountDao(),
+       _accountingPeriodDao = accountingPeriodDao ?? AccountingPeriodDao(),
+       _transactionDao = transactionDao ?? TransactionDao(),
+       _transferDao = transferDao ?? TransferDao();
 
   final AccountDao _accountDao;
   final AccountingPeriodDao _accountingPeriodDao;
@@ -33,14 +33,14 @@ class AccountBalanceRecalculator {
     if (account == null) return;
 
     final incomeTotal = await _transactionDao.sumIncomeForAccount(accountId);
-    final expenseTotal =
-        await _transactionDao.sumExpenseForAccount(accountId);
-    final transfersIn =
-        await _transferDao.sumTransfersInForAccount(accountId);
-    final transfersOut =
-        await _transferDao.sumTransfersOutForAccount(accountId);
+    final expenseTotal = await _transactionDao.sumExpenseForAccount(accountId);
+    final transfersIn = await _transferDao.sumTransfersInForAccount(accountId);
+    final transfersOut = await _transferDao.sumTransfersOutForAccount(
+      accountId,
+    );
 
-    final newBalance = account.beginningBalance +
+    final newBalance =
+        account.beginningBalance +
         incomeTotal -
         expenseTotal +
         transfersIn -

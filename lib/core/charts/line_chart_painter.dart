@@ -7,8 +7,9 @@ import 'chart_datum.dart';
 /// straight-line segments, filled circle markers, and a light gradient
 /// fill under the line.
 ///
-/// Handles 0, 1, and many points without throwing: an empty list shows a
-/// centered "No data" label, a single point draws only its marker.
+/// Handles 0, 1, and many points without throwing: an empty list draws
+/// just the baseline/gridlines (no "No data" label), a single point draws
+/// only its marker.
 class LineChartPainter extends CustomPainter {
   LineChartPainter({
     required this.data,
@@ -44,7 +45,8 @@ class LineChartPainter extends CustomPainter {
     );
 
     if (data.isEmpty) {
-      _drawNoData(canvas, Size(size.width, chartHeight));
+      // Nothing to plot yet — baseline/gridlines already drawn above, no
+      // "No data" label needed.
       return;
     }
 
@@ -105,7 +107,12 @@ class LineChartPainter extends CustomPainter {
   }) {
     final n = data.length;
     if (n == 1) {
-      return [Offset(width / 2, chartHeight - (data[0].value.abs() / maxValue) * chartHeight)];
+      return [
+        Offset(
+          width / 2,
+          chartHeight - (data[0].value.abs() / maxValue) * chartHeight,
+        ),
+      ];
     }
     final step = width / (n - 1);
     return [
@@ -145,7 +152,8 @@ class LineChartPainter extends CustomPainter {
     final tp = TextPainter(
       text: TextSpan(
         text: label,
-        style: textStyle ??
+        style:
+            textStyle ??
             const TextStyle(color: AppColors.textSecondary, fontSize: 10),
       ),
       textDirection: TextDirection.ltr,
@@ -154,24 +162,6 @@ class LineChartPainter extends CustomPainter {
     );
     tp.layout(maxWidth: 60);
     tp.paint(canvas, Offset(centerX - tp.width / 2, top));
-  }
-
-  void _drawNoData(Canvas canvas, Size chartArea) {
-    final tp = TextPainter(
-      text: const TextSpan(
-        text: 'No data',
-        style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
-      ),
-      textDirection: TextDirection.ltr,
-    );
-    tp.layout(maxWidth: chartArea.width);
-    tp.paint(
-      canvas,
-      Offset(
-        (chartArea.width - tp.width) / 2,
-        (chartArea.height - tp.height) / 2,
-      ),
-    );
   }
 
   @override

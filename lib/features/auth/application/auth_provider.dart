@@ -14,6 +14,16 @@ final currentUserProvider = FutureProvider<AppUser?>((ref) {
   return ref.watch(userDaoProvider).getFirstUser();
 });
 
+/// The one user (if any) currently flagged for "Remember Me" auto-login.
+/// Read directly by the router's redirect logic (not just by
+/// [AuthController]'s own best-effort background attempt) so a
+/// remembered session is restored deterministically on cold start,
+/// without depending on a detached microtask racing the router's first
+/// redirect evaluation.
+final rememberedUserProvider = FutureProvider<AppUser?>((ref) {
+  return ref.watch(userDaoProvider).getRememberedUser();
+});
+
 /// Kept alive app-wide — session state must persist regardless of which
 /// screens are currently mounted/watching it.
 final sessionManagerProvider = Provider<SessionManager>((ref) {
@@ -71,7 +81,16 @@ class AuthController extends Notifier<AuthState> {
     if (!state.isLoggedOut) return; // already logged in/locked somehow
     final remembered = await ref.read(userDaoProvider).getRememberedUser();
     if (remembered == null || !state.isLoggedOut) return;
-    state = AuthState.loggedIn(remembered);
+    applyRememberedUser(remembered);
+  }
+
+  /// Restores a "Remember Me" session. Idempotent/safe to call more than
+  /// once (e.g. from both this controller's own background attempt and
+  /// the router's redirect logic, whichever notices first) — a no-op if
+  /// the app is already past the logged-out state by the time it runs.
+  void applyRememberedUser(AppUser user) {
+    if (!state.isLoggedOut) return;
+    state = AuthState.loggedIn(user);
     ref.read(sessionManagerProvider).unlock();
   }
 

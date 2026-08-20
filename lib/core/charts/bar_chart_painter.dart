@@ -16,13 +16,10 @@ const List<Color> _defaultBarPalette = [
 /// Draws a simple vertical bar chart for a list of [ChartDatum].
 ///
 /// Handles empty and all-zero data gracefully by drawing a flat baseline
-/// with a centered "No data" label instead of dividing by zero.
+/// instead of dividing by zero (no "No data" label — an empty chart on a
+/// fresh account/period isn't an error state worth calling out).
 class BarChartPainter extends CustomPainter {
-  BarChartPainter({
-    required this.data,
-    this.colors,
-    this.textStyle,
-  });
+  BarChartPainter({required this.data, this.colors, this.textStyle});
 
   final List<ChartDatum> data;
   final List<Color>? colors;
@@ -57,8 +54,9 @@ class BarChartPainter extends CustomPainter {
     }
 
     if (data.isEmpty) {
-      _drawNoData(canvas, Size(size.width, chartHeight));
-      // Baseline.
+      // Nothing to plot yet — just the flat baseline below, no "No data"
+      // label; an empty chart on a fresh account/period isn't an error
+      // state worth calling out with text.
       canvas.drawLine(
         Offset(0, chartHeight),
         Offset(size.width, chartHeight),
@@ -80,7 +78,8 @@ class BarChartPainter extends CustomPainter {
     );
 
     if (maxValue <= 0) {
-      _drawNoData(canvas, Size(size.width, chartHeight));
+      // All-zero data (e.g. no income/expense recorded yet this period) —
+      // baseline is already drawn above; no "No data" label.
       return;
     }
 
@@ -131,7 +130,8 @@ class BarChartPainter extends CustomPainter {
     final tp = TextPainter(
       text: TextSpan(
         text: label,
-        style: textStyle ??
+        style:
+            textStyle ??
             const TextStyle(color: AppColors.textSecondary, fontSize: 10),
       ),
       textDirection: TextDirection.ltr,
@@ -140,24 +140,6 @@ class BarChartPainter extends CustomPainter {
     );
     tp.layout(maxWidth: maxWidth);
     tp.paint(canvas, Offset(centerX - tp.width / 2, top));
-  }
-
-  void _drawNoData(Canvas canvas, Size chartArea) {
-    final tp = TextPainter(
-      text: const TextSpan(
-        text: 'No data',
-        style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
-      ),
-      textDirection: TextDirection.ltr,
-    );
-    tp.layout(maxWidth: chartArea.width);
-    tp.paint(
-      canvas,
-      Offset(
-        (chartArea.width - tp.width) / 2,
-        (chartArea.height - tp.height) / 2,
-      ),
-    );
   }
 
   @override

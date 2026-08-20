@@ -27,6 +27,9 @@ import '../../features/reports/presentation/screens/financial_summary_screen.dar
 import '../../features/reports/presentation/screens/income_report_screen.dart';
 import '../../features/reports/presentation/screens/money_in_out_report_screen.dart';
 import '../../features/reports/presentation/screens/reports_home_screen.dart';
+import '../../features/recurring_payments/application/recurring_payments_provider.dart';
+import '../../features/recurring_payments/presentation/screens/recurring_payment_form_screen.dart';
+import '../../features/recurring_payments/presentation/screens/recurring_payments_list_screen.dart';
 import '../../features/settings/presentation/screens/about_screen.dart';
 import '../../features/settings/presentation/screens/account_settings_screen.dart';
 import '../../features/settings/presentation/screens/accounting_settings_screen.dart';
@@ -85,6 +88,27 @@ final appRouterProvider = Provider<GoRouter>((ref) {
 
       final hasUser = currentUser.hasValue && currentUser.value != null;
       if (hasUser && authState.isLoggedOut) {
+        // "Remember Me": before sending a logged-out visitor to Welcome/
+        // Login, check whether a session was left remembered. Reading
+        // this directly here — rather than relying solely on
+        // AuthController's own best-effort background attempt — means
+        // the very first redirect decision on cold start already knows
+        // the answer, instead of racing a detached microtask (which
+        // could otherwise flash the login form before flipping over).
+        final remembered = ref.read(rememberedUserProvider);
+        if (!remembered.hasValue) {
+          // Still resolving — hold position rather than momentarily
+          // showing the login form only to redirect away a moment later.
+          return null;
+        }
+        final rememberedUser = remembered.value;
+        if (rememberedUser != null) {
+          ref
+              .read(authControllerProvider.notifier)
+              .applyRememberedUser(rememberedUser);
+          return '/dashboard';
+        }
+
         if (loggedOutRoutes.contains(location)) return null;
         return '/welcome';
       }
@@ -320,6 +344,51 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         },
       ),
 
+      // Recurring payment schedules
+      GoRoute(
+        path: '/recurring-payments',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => RecurringPaymentsListScreen(
+          onCreateNew: () => context.push('/recurring-payments/new'),
+          onTapPayment: (payment) =>
+              context.push('/recurring-payments/${payment.id}/edit'),
+        ),
+      ),
+      GoRoute(
+        path: '/recurring-payments/new',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => RecurringPaymentFormScreen(
+          onSaved: () => context.pop(),
+          onCancel: () => context.pop(),
+        ),
+      ),
+      GoRoute(
+        path: '/recurring-payments/:id/edit',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) {
+          final id = int.parse(state.pathParameters['id']!);
+          return Consumer(
+            builder: (context, ref, _) {
+              final paymentAsync = ref.watch(recurringPaymentByIdProvider(id));
+              return paymentAsync.when(
+                loading: () => const Scaffold(
+                  body: Center(child: CircularProgressIndicator()),
+                ),
+                error: (err, st) => Scaffold(
+                  appBar: AppBar(title: const Text('Edit Recurring Payment')),
+                  body: Center(child: Text('Failed to load: $err')),
+                ),
+                data: (payment) => RecurringPaymentFormScreen(
+                  existing: payment,
+                  onSaved: () => context.pop(),
+                  onCancel: () => context.pop(),
+                ),
+              );
+            },
+          );
+        },
+      ),
+
       // Reports
       GoRoute(
         path: '/reports/financial-summary',
@@ -393,6 +462,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                   onViewTransactions: () => context.go('/transactions'),
                   onReports: () => context.go('/reports'),
                   onViewAccounts: () => context.go('/accounts'),
+                  onRecurringPayments: () =>
+                      context.push('/recurring-payments'),
                 ),
               ),
             ],

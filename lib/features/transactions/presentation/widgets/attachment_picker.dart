@@ -22,7 +22,10 @@ class AttachmentPicker extends StatelessWidget {
   });
 
   Future<void> _pick(BuildContext context, ImageSource source) async {
-    final picked = await ImagePicker().pickImage(source: source, imageQuality: 85);
+    final picked = await ImagePicker().pickImage(
+      source: source,
+      imageQuality: 85,
+    );
     if (picked == null) return;
 
     final docsDir = await getApplicationDocumentsDirectory();
@@ -65,7 +68,10 @@ class AttachmentPicker extends StatelessWidget {
               ),
               if (initialPath != null)
                 ListTile(
-                  leading: const Icon(Icons.delete_outline, color: AppColors.expense),
+                  leading: const Icon(
+                    Icons.delete_outline,
+                    color: AppColors.expense,
+                  ),
                   title: const Text(
                     'Remove Attachment',
                     style: TextStyle(color: AppColors.expense),
@@ -103,7 +109,10 @@ class AttachmentPicker extends StatelessWidget {
                 File(path),
                 fit: BoxFit.cover,
                 errorBuilder: (context, error, stackTrace) => const Center(
-                  child: Icon(Icons.broken_image_outlined, color: AppColors.textSecondary),
+                  child: Icon(
+                    Icons.broken_image_outlined,
+                    color: AppColors.textSecondary,
+                  ),
                 ),
               )
             : const Column(
@@ -113,7 +122,10 @@ class AttachmentPicker extends StatelessWidget {
                   SizedBox(height: AppSpacing.xs),
                   Text(
                     'Add Receipt',
-                    style: TextStyle(fontSize: 11, color: AppColors.textSecondary),
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: AppColors.textSecondary,
+                    ),
                     textAlign: TextAlign.center,
                   ),
                 ],

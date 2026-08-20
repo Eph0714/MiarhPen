@@ -15,7 +15,9 @@ class AppConstants {
   static const int maxPinLength = 6;
 
   static const String dbFileName = 'miarhpen.db';
-  static const int dbVersion = 1;
+  // v2 adds the `recurring_payments` table (additive-only migration — see
+  // AppDatabase.onUpgrade — existing tables/rows are never touched).
+  static const int dbVersion = 2;
 }
 
 /// Account types per spec section 9.
@@ -80,3 +82,7 @@ enum TransactionType { income, expense }
 enum HistoryEntryType { income, expense, transferIn, transferOut }
 
 enum AccountingPeriodStatus { open, closed }
+
+/// Payment status for a [RecurringPayment] schedule entry, e.g. "Payment of
+/// Housing Loan" for the current cycle.
+enum RecurringPaymentStatus { unpaid, paid }

@@ -7,6 +7,7 @@ import 'core/security/secure_storage_service.dart';
 import 'core/theme/app_theme.dart';
 import 'features/auth/application/auth_provider.dart';
 import 'features/categories/application/seed_default_categories.dart';
+import 'features/transactions/application/backfill_transaction_periods.dart';
 
 /// Root widget: builds the go_router-based app shell, seeds default
 /// categories on first launch, and resets the idle/session timer on any
@@ -25,8 +26,9 @@ class _MiarhPenAppState extends ConsumerState<MiarhPenApp> {
   @override
   void initState() {
     super.initState();
-    // Idempotent — safe to fire-and-forget on every app start.
+    // Both idempotent — safe to fire-and-forget on every app start.
     seedDefaultCategoriesIfNeeded();
+    backfillTransactionPeriodsIfNeeded();
   }
 
   /// Asks, once ever, for exemption from battery optimization /
@@ -42,8 +44,8 @@ class _MiarhPenAppState extends ConsumerState<MiarhPenApp> {
     );
     if (alreadyPrompted == 'true') return;
 
-    final alreadyExempt =
-        await _batteryOptimizationService.isIgnoringBatteryOptimizations();
+    final alreadyExempt = await _batteryOptimizationService
+        .isIgnoringBatteryOptimizations();
     if (!alreadyExempt) {
       await _batteryOptimizationService.requestIgnoreBatteryOptimizations();
     }

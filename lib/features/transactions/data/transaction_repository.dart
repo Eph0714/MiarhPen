@@ -16,9 +16,9 @@ class TransactionRepository {
     TransactionDao? transactionDao,
     AccountBalanceRecalculator? recalculator,
     TransferDao? transferDao,
-  })  : _transactionDao = transactionDao ?? TransactionDao(),
-        _recalculator = recalculator ?? AccountBalanceRecalculator(),
-        _transferDao = transferDao ?? TransferDao();
+  }) : _transactionDao = transactionDao ?? TransactionDao(),
+       _recalculator = recalculator ?? AccountBalanceRecalculator(),
+       _transferDao = transferDao ?? TransferDao();
 
   final TransactionDao _transactionDao;
   final AccountBalanceRecalculator _recalculator;

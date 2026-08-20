@@ -45,7 +45,8 @@ class AppDatabase {
 
   Future<Database> _open() async {
     // Desktop test runs (no Android/iOS platform) need the FFI backend.
-    if (!kIsWeb && (Platform.isWindows || Platform.isLinux || Platform.isMacOS)) {
+    if (!kIsWeb &&
+        (Platform.isWindows || Platform.isLinux || Platform.isMacOS)) {
       ffi.sqfliteFfiInit();
       databaseFactory = ffi.databaseFactoryFfi;
     }
@@ -63,7 +64,10 @@ class AppDatabase {
         await _createSchema(db);
       },
       onUpgrade: (db, oldVersion, newVersion) async {
-        // Future migrations go here, gated on oldVersion/newVersion.
+        // Additive-only: never drops/rewrites existing tables or rows.
+        if (oldVersion < 2) {
+          await _createRecurringPaymentsTable(db);
+        }
       },
     );
   }
@@ -202,6 +206,38 @@ class AppDatabase {
     batch.execute('CREATE INDEX idx_transfer_date ON transfers(date)');
 
     await batch.commit(noResult: true);
+    await _createRecurringPaymentsTable(db);
+  }
+
+  /// Schedule of recurring payments (e.g. "Payment of Housing Loan, every 6
+  /// of the month, 08:00 AM - 05:00 PM, Unpaid"). Introduced in schema v2;
+  /// created both on fresh installs (from [_createSchema]) and via
+  /// [onUpgrade] for existing installs, so no one loses this table just
+  /// because they installed before it existed. Purely additive — does not
+  /// touch any other table.
+  Future<void> _createRecurringPaymentsTable(Database db) async {
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS recurring_payments (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        description TEXT,
+        amount REAL,
+        account_id INTEGER REFERENCES accounts(id),
+        expense_category_id INTEGER REFERENCES expense_categories(id),
+        day_of_month INTEGER NOT NULL CHECK (day_of_month BETWEEN 1 AND 31),
+        start_time TEXT,
+        end_time TEXT,
+        status TEXT NOT NULL DEFAULT 'UNPAID',
+        is_active INTEGER NOT NULL DEFAULT 1,
+        last_paid_date TEXT,
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL
+      )
+    ''');
+    await db.execute(
+      'CREATE INDEX IF NOT EXISTS idx_recurring_payments_active '
+      'ON recurring_payments(is_active)',
+    );
   }
 
   /// Closes and clears the cached instance/in-flight open — used by

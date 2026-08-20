@@ -34,6 +34,26 @@ class TransactionDao {
     return count;
   }
 
+  /// One-time repair for transactions recorded before a bug fix that left
+  /// new entries with `accounting_period_id = NULL` — such rows were
+  /// invisible to the dashboard's period-scoped Money In/Out/Net
+  /// Movement/Ending Balance sums even though they were saved correctly
+  /// and their account balances were already right. This only fills in
+  /// that missing reference on rows where it's currently null; it never
+  /// touches amount, date, description, or any other field, so no
+  /// existing record is erased or overwritten — just linked to the period
+  /// it actually belongs to. Returns the number of rows fixed.
+  Future<int> backfillMissingAccountingPeriod(int periodId) async {
+    final db = await AppDatabase.instance.database;
+    final count = await db.update('transactions', {
+      'accounting_period_id': periodId,
+    }, where: 'accounting_period_id IS NULL');
+    if (count > 0) {
+      DbChangeNotifier.instance.notify(DbTable.transactions);
+    }
+    return count;
+  }
+
   Future<TransactionEntry?> getById(int id) async {
     final db = await AppDatabase.instance.database;
     final rows = await db.query(
@@ -174,7 +194,9 @@ class TransactionDao {
   }) async {
     final db = await AppDatabase.instance.database;
     final categoryTable = income ? 'income_categories' : 'expense_categories';
-    final categoryColumn = income ? 'income_category_id' : 'expense_category_id';
+    final categoryColumn = income
+        ? 'income_category_id'
+        : 'expense_category_id';
     final type = income ? 'INCOME' : 'EXPENSE';
 
     final where = StringBuffer('t.type = ?');
@@ -188,17 +210,14 @@ class TransactionDao {
       args.add(to.toIso8601String());
     }
 
-    final rows = await db.rawQuery(
-      '''
+    final rows = await db.rawQuery('''
       SELECT c.id AS category_id, c.name AS category_name, SUM(t.amount) AS total
       FROM transactions t
       JOIN $categoryTable c ON c.id = t.$categoryColumn
       WHERE $where
       GROUP BY c.id, c.name
       ORDER BY total DESC
-      ''',
-      args,
-    );
+      ''', args);
     return rows;
   }
 }

@@ -83,9 +83,9 @@ class TransactionTile extends StatelessWidget {
         title,
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
-        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
+        style: Theme.of(
+          context,
+        ).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w600),
       ),
       subtitle: Text(
         [
@@ -103,9 +103,9 @@ class TransactionTile extends StatelessWidget {
           Text(
             amountText,
             style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  color: signedAmount < 0 ? AppColors.expense : AppColors.income,
-                  fontWeight: FontWeight.w700,
-                ),
+              color: signedAmount < 0 ? AppColors.expense : AppColors.income,
+              fontWeight: FontWeight.w700,
+            ),
           ),
           if (runningBalance != null) ...[
             const SizedBox(height: 2),

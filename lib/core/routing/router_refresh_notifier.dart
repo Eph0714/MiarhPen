@@ -19,16 +19,23 @@ class RouterRefreshNotifier extends ChangeNotifier {
       (previous, next) => notifyListeners(),
       fireImmediately: false,
     );
+    _rememberedUserSub = _ref.listen<AsyncValue<dynamic>>(
+      rememberedUserProvider,
+      (previous, next) => notifyListeners(),
+      fireImmediately: false,
+    );
   }
 
   final Ref _ref;
   late final ProviderSubscription<AuthState> _authSub;
   late final ProviderSubscription<AsyncValue<dynamic>> _userSub;
+  late final ProviderSubscription<AsyncValue<dynamic>> _rememberedUserSub;
 
   @override
   void dispose() {
     _authSub.close();
     _userSub.close();
+    _rememberedUserSub.close();
     super.dispose();
   }
 }

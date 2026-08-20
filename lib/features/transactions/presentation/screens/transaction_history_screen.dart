@@ -36,10 +36,12 @@ class TransactionHistoryScreen extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<TransactionHistoryScreen> createState() => _TransactionHistoryScreenState();
+  ConsumerState<TransactionHistoryScreen> createState() =>
+      _TransactionHistoryScreenState();
 }
 
-class _TransactionHistoryScreenState extends ConsumerState<TransactionHistoryScreen> {
+class _TransactionHistoryScreenState
+    extends ConsumerState<TransactionHistoryScreen> {
   late TransactionFilter _filter;
   final _searchController = TextEditingController();
 
@@ -82,11 +84,14 @@ class _TransactionHistoryScreenState extends ConsumerState<TransactionHistoryScr
     if (_filter.accountId != null) {
       final accountId = _filter.accountId!;
       final fullHistoryFilter = TransactionFilter(accountId: accountId);
-      final fullHistoryAsync = ref.watch(transactionsFilteredProvider(fullHistoryFilter));
+      final fullHistoryAsync = ref.watch(
+        transactionsFilteredProvider(fullHistoryFilter),
+      );
       final displayed = ref.watch(transactionsFilteredProvider(_filter));
 
       final computed = fullHistoryAsync.whenData((all) {
-        final sorted = [...all]..sort((a, b) {
+        final sorted = [...all]
+          ..sort((a, b) {
             final byDate = a.date.compareTo(b.date);
             if (byDate != 0) return byDate;
             return (a.id ?? 0).compareTo(b.id ?? 0);
@@ -140,16 +145,17 @@ class _TransactionHistoryScreenState extends ConsumerState<TransactionHistoryScr
               children: DateRangePreset.values
                   .where((p) => p != DateRangePreset.custom)
                   .map((preset) {
-                final selected = _filter.preset == preset;
-                return Padding(
-                  padding: const EdgeInsets.only(right: AppSpacing.sm),
-                  child: ChoiceChip(
-                    label: Text(preset.label),
-                    selected: selected,
-                    onSelected: (_) => _setPreset(preset),
-                  ),
-                );
-              }).toList(),
+                    final selected = _filter.preset == preset;
+                    return Padding(
+                      padding: const EdgeInsets.only(right: AppSpacing.sm),
+                      child: ChoiceChip(
+                        label: Text(preset.label),
+                        selected: selected,
+                        onSelected: (_) => _setPreset(preset),
+                      ),
+                    );
+                  })
+                  .toList(),
             ),
           ),
           const SizedBox(height: AppSpacing.xs),
@@ -164,13 +170,22 @@ class _TransactionHistoryScreenState extends ConsumerState<TransactionHistoryScr
                       isExpanded: true,
                       decoration: const InputDecoration(labelText: 'Account'),
                       items: [
-                        const DropdownMenuItem<int?>(value: null, child: Text('All Accounts')),
+                        const DropdownMenuItem<int?>(
+                          value: null,
+                          child: Text('All Accounts'),
+                        ),
                         ...accounts.map(
-                          (a) => DropdownMenuItem<int?>(value: a.id, child: Text(a.name)),
+                          (a) => DropdownMenuItem<int?>(
+                            value: a.id,
+                            child: Text(a.name),
+                          ),
                         ),
                       ],
                       onChanged: (v) => setState(() {
-                        _filter = _filter.copyWith(accountId: v, clearAccountId: v == null);
+                        _filter = _filter.copyWith(
+                          accountId: v,
+                          clearAccountId: v == null,
+                        );
                       }),
                     ),
                     loading: () => const SizedBox.shrink(),
@@ -184,7 +199,10 @@ class _TransactionHistoryScreenState extends ConsumerState<TransactionHistoryScr
                     isExpanded: true,
                     decoration: const InputDecoration(labelText: 'Type'),
                     items: const [
-                      DropdownMenuItem<TransactionType?>(value: null, child: Text('All Types')),
+                      DropdownMenuItem<TransactionType?>(
+                        value: null,
+                        child: Text('All Types'),
+                      ),
                       DropdownMenuItem<TransactionType?>(
                         value: TransactionType.income,
                         child: Text('Income'),
@@ -203,29 +221,53 @@ class _TransactionHistoryScreenState extends ConsumerState<TransactionHistoryScr
             ),
           ),
           Padding(
-            padding: const EdgeInsets.fromLTRB(AppSpacing.md, AppSpacing.sm, AppSpacing.md, 0),
-            child: (incomeCategoriesAsync.value == null || expenseCategoriesAsync.value == null)
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.md,
+              AppSpacing.sm,
+              AppSpacing.md,
+              0,
+            ),
+            child:
+                (incomeCategoriesAsync.value == null ||
+                    expenseCategoriesAsync.value == null)
                 ? const SizedBox.shrink()
-                : Builder(builder: (context) {
-                    final categories = [
-                      ...?incomeCategoriesAsync.value?.map((c) => (id: c.id, name: c.name)),
-                      ...?expenseCategoriesAsync.value?.map((c) => (id: c.id, name: c.name)),
-                    ];
-                    return DropdownButtonFormField<int?>(
-                      initialValue: _filter.categoryId,
-                      isExpanded: true,
-                      decoration: const InputDecoration(labelText: 'Category'),
-                      items: [
-                        const DropdownMenuItem<int?>(value: null, child: Text('All Categories')),
-                        ...categories.map(
-                          (c) => DropdownMenuItem<int?>(value: c.id, child: Text(c.name)),
+                : Builder(
+                    builder: (context) {
+                      final categories = [
+                        ...?incomeCategoriesAsync.value?.map(
+                          (c) => (id: c.id, name: c.name),
                         ),
-                      ],
-                      onChanged: (v) => setState(() {
-                        _filter = _filter.copyWith(categoryId: v, clearCategoryId: v == null);
-                      }),
-                    );
-                  }),
+                        ...?expenseCategoriesAsync.value?.map(
+                          (c) => (id: c.id, name: c.name),
+                        ),
+                      ];
+                      return DropdownButtonFormField<int?>(
+                        initialValue: _filter.categoryId,
+                        isExpanded: true,
+                        decoration: const InputDecoration(
+                          labelText: 'Category',
+                        ),
+                        items: [
+                          const DropdownMenuItem<int?>(
+                            value: null,
+                            child: Text('All Categories'),
+                          ),
+                          ...categories.map(
+                            (c) => DropdownMenuItem<int?>(
+                              value: c.id,
+                              child: Text(c.name),
+                            ),
+                          ),
+                        ],
+                        onChanged: (v) => setState(() {
+                          _filter = _filter.copyWith(
+                            categoryId: v,
+                            clearCategoryId: v == null,
+                          );
+                        }),
+                      );
+                    },
+                  ),
           ),
           const SizedBox(height: AppSpacing.sm),
           const Divider(height: 1),
@@ -244,7 +286,8 @@ class _TransactionHistoryScreenState extends ConsumerState<TransactionHistoryScr
                   final key = DateFormatter.iso(e.date);
                   grouped.putIfAbsent(key, () => []).add(e);
                 }
-                final sortedKeys = grouped.keys.toList()..sort((a, b) => b.compareTo(a));
+                final sortedKeys = grouped.keys.toList()
+                  ..sort((a, b) => b.compareTo(a));
 
                 return ListView.builder(
                   itemCount: sortedKeys.length,
@@ -280,14 +323,18 @@ class _TransactionHistoryScreenState extends ConsumerState<TransactionHistoryScr
                             entryType: e.isIncome
                                 ? HistoryEntryType.income
                                 : HistoryEntryType.expense,
-                            title: (e.description == null || e.description!.isEmpty)
+                            title:
+                                (e.description == null ||
+                                    e.description!.isEmpty)
                                 ? (e.isIncome ? 'Income' : 'Expense')
                                 : e.description!,
                             date: e.date,
                             amount: e.amount,
                             accountName: accountName,
                             runningBalance:
-                                (runningBalances != null && e.id != null) ? runningBalances[e.id!] : null,
+                                (runningBalances != null && e.id != null)
+                                ? runningBalances[e.id!]
+                                : null,
                             onTap: () => widget.onTapTransaction(e),
                           );
                         }),
@@ -297,7 +344,8 @@ class _TransactionHistoryScreenState extends ConsumerState<TransactionHistoryScr
                 );
               },
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (e, st) => Center(child: Text('Failed to load transactions: $e')),
+              error: (e, st) =>
+                  Center(child: Text('Failed to load transactions: $e')),
             ),
           ),
         ],

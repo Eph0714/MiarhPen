@@ -23,6 +23,7 @@ class QuickActionsRow extends StatelessWidget {
     required this.onTransfer,
     required this.onViewTransactions,
     required this.onReports,
+    required this.onRecurringPayments,
   });
 
   final int accountCount;
@@ -30,6 +31,7 @@ class QuickActionsRow extends StatelessWidget {
   final VoidCallback onTransfer;
   final VoidCallback onViewTransactions;
   final VoidCallback onReports;
+  final VoidCallback onRecurringPayments;
 
   @override
   Widget build(BuildContext context) {
@@ -65,6 +67,12 @@ class QuickActionsRow extends StatelessWidget {
           icon: Icons.bar_chart_outlined,
           color: AppColors.primary,
           onTap: onReports,
+        ),
+        _ActionButton(
+          label: 'Recurring Payments',
+          icon: Icons.event_repeat_outlined,
+          color: AppColors.liability,
+          onTap: onRecurringPayments,
         ),
       ],
     );

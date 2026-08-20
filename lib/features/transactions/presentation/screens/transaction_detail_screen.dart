@@ -38,7 +38,8 @@ class TransactionDetailScreen extends ConsumerWidget {
     final confirmed = await showConfirmDialog(
       context,
       title: 'Delete Transaction',
-      message: 'Are you sure you want to delete this transaction? This cannot be undone.',
+      message:
+          'Are you sure you want to delete this transaction? This cannot be undone.',
       confirmLabel: 'Delete',
       destructive: true,
     );
@@ -67,9 +68,15 @@ class TransactionDetailScreen extends ConsumerWidget {
             }
             final isIncome = entry.isIncome;
             final color = isIncome ? AppColors.income : AppColors.expense;
-            final accountAsync = ref.watch(accountByIdProvider(entry.accountId));
-            final incomeCategoriesAsync = ref.watch(incomeCategoriesStreamProvider);
-            final expenseCategoriesAsync = ref.watch(expenseCategoriesStreamProvider);
+            final accountAsync = ref.watch(
+              accountByIdProvider(entry.accountId),
+            );
+            final incomeCategoriesAsync = ref.watch(
+              incomeCategoriesStreamProvider,
+            );
+            final expenseCategoriesAsync = ref.watch(
+              expenseCategoriesStreamProvider,
+            );
             final categoryNameAsync = isIncome
                 ? incomeCategoriesAsync.whenData((cats) {
                     for (final c in cats) {
@@ -93,15 +100,17 @@ class TransactionDetailScreen extends ConsumerWidget {
                     children: [
                       Text(
                         '${isIncome ? '+' : '-'}${CurrencyFormatter.format(entry.amount)}',
-                        style: Theme.of(context)
-                            .textTheme
-                            .displayMedium
-                            ?.copyWith(color: color),
+                        style: Theme.of(
+                          context,
+                        ).textTheme.displayMedium?.copyWith(color: color),
                       ),
                       const SizedBox(height: AppSpacing.xs),
                       Text(
                         isIncome ? 'Income' : 'Expense',
-                        style: TextStyle(color: color, fontWeight: FontWeight.w600),
+                        style: TextStyle(
+                          color: color,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ],
                   ),
@@ -126,27 +135,36 @@ class TransactionDetailScreen extends ConsumerWidget {
                           orElse: () => '…',
                         ),
                       ),
-                      if (entry.description != null && entry.description!.isNotEmpty)
+                      if (entry.description != null &&
+                          entry.description!.isNotEmpty)
                         _detailRow('Description', entry.description!),
-                      if (entry.referenceNumber != null && entry.referenceNumber!.isNotEmpty)
+                      if (entry.referenceNumber != null &&
+                          entry.referenceNumber!.isNotEmpty)
                         _detailRow('Reference Number', entry.referenceNumber!),
                       if (entry.notes != null && entry.notes!.isNotEmpty)
                         _detailRow('Notes', entry.notes!),
                     ],
                   ),
                 ),
-                if (entry.attachmentPath != null && entry.attachmentPath!.isNotEmpty) ...[
+                if (entry.attachmentPath != null &&
+                    entry.attachmentPath!.isNotEmpty) ...[
                   const SizedBox(height: AppSpacing.md),
                   AppCard(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Attachment', style: Theme.of(context).textTheme.titleMedium),
+                        Text(
+                          'Attachment',
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
                         const SizedBox(height: AppSpacing.sm),
                         GestureDetector(
-                          onTap: () => _viewFullImage(context, entry.attachmentPath!),
+                          onTap: () =>
+                              _viewFullImage(context, entry.attachmentPath!),
                           child: ClipRRect(
-                            borderRadius: BorderRadius.circular(AppSpacing.buttonRadius),
+                            borderRadius: BorderRadius.circular(
+                              AppSpacing.buttonRadius,
+                            ),
                             child: Image.file(
                               File(entry.attachmentPath!),
                               height: 160,
@@ -194,7 +212,10 @@ class TransactionDetailScreen extends ConsumerWidget {
         children: [
           SizedBox(
             width: 130,
-            child: Text(label, style: const TextStyle(color: AppColors.textSecondary)),
+            child: Text(
+              label,
+              style: const TextStyle(color: AppColors.textSecondary),
+            ),
           ),
           Expanded(child: Text(value)),
         ],
@@ -208,9 +229,7 @@ class TransactionDetailScreen extends ConsumerWidget {
       builder: (context) => Dialog(
         backgroundColor: Colors.black,
         insetPadding: const EdgeInsets.all(AppSpacing.md),
-        child: InteractiveViewer(
-          child: Image.file(File(path)),
-        ),
+        child: InteractiveViewer(child: Image.file(File(path))),
       ),
     );
   }

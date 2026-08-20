@@ -9,6 +9,7 @@ enum DbTable {
   expenseCategories,
   transactions,
   transfers,
+  recurringPayments,
 }
 
 /// A tiny in-app pub/sub used in place of drift's generated reactive

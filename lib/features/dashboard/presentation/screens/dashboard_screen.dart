@@ -30,6 +30,7 @@ class DashboardScreen extends ConsumerWidget {
     required this.onViewTransactions,
     required this.onReports,
     required this.onViewAccounts,
+    required this.onRecurringPayments,
   });
 
   final VoidCallback onAddIncome;
@@ -38,6 +39,7 @@ class DashboardScreen extends ConsumerWidget {
   final VoidCallback onViewTransactions;
   final VoidCallback onReports;
   final VoidCallback onViewAccounts;
+  final VoidCallback onRecurringPayments;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -195,6 +197,7 @@ class DashboardScreen extends ConsumerWidget {
                         onTransfer: onTransfer,
                         onViewTransactions: onViewTransactions,
                         onReports: onReports,
+                        onRecurringPayments: onRecurringPayments,
                       ),
                       const SizedBox(height: AppSpacing.lg),
                       Text(

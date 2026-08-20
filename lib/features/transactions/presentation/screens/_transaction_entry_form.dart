@@ -27,7 +27,8 @@ class TransactionEntryForm extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<TransactionEntryForm> createState() => _TransactionEntryFormState();
+  ConsumerState<TransactionEntryForm> createState() =>
+      _TransactionEntryFormState();
 }
 
 class _TransactionEntryFormState extends ConsumerState<TransactionEntryForm> {
@@ -82,20 +83,22 @@ class _TransactionEntryFormState extends ConsumerState<TransactionEntryForm> {
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
     if (_accountId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select an account')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Please select an account')));
       return;
     }
     if (_categoryId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select a category')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Please select a category')));
       return;
     }
 
     final amount = double.parse(_amountController.text.trim());
-    await ref.read(addTransactionControllerProvider.notifier).submit(
+    await ref
+        .read(addTransactionControllerProvider.notifier)
+        .submit(
           isIncome: widget.isIncome,
           date: _date,
           accountId: _accountId!,
@@ -118,9 +121,9 @@ class _TransactionEntryFormState extends ConsumerState<TransactionEntryForm> {
     final state = ref.read(addTransactionControllerProvider);
     if (state.hasError) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to save: ${state.error}')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Failed to save: ${state.error}')));
       return;
     }
 
@@ -136,18 +139,26 @@ class _TransactionEntryFormState extends ConsumerState<TransactionEntryForm> {
     // interface, so both branches are normalized to a common (id, name)
     // record here rather than exposing the raw model to the dropdown below.
     final categoriesAsync = isIncome
-        ? ref.watch(incomeCategoriesStreamProvider).whenData(
-            (cats) => cats.map((c) => (id: c.id, name: c.name)).toList())
-        : ref.watch(expenseCategoriesStreamProvider).whenData(
-            (cats) => cats.map((c) => (id: c.id, name: c.name)).toList());
+        ? ref
+              .watch(incomeCategoriesStreamProvider)
+              .whenData(
+                (cats) => cats.map((c) => (id: c.id, name: c.name)).toList(),
+              )
+        : ref
+              .watch(expenseCategoriesStreamProvider)
+              .whenData(
+                (cats) => cats.map((c) => (id: c.id, name: c.name)).toList(),
+              );
     final submitState = ref.watch(addTransactionControllerProvider);
     final isSubmitting = submitState.isLoading;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.editing != null
-            ? (isIncome ? 'Edit Income' : 'Edit Expense')
-            : (isIncome ? 'Add Income' : 'Add Expense')),
+        title: Text(
+          widget.editing != null
+              ? (isIncome ? 'Edit Income' : 'Edit Expense')
+              : (isIncome ? 'Add Income' : 'Add Expense'),
+        ),
         leading: IconButton(
           icon: const Icon(Icons.close),
           onPressed: widget.onCancel,
@@ -174,15 +185,23 @@ class _TransactionEntryFormState extends ConsumerState<TransactionEntryForm> {
               categoriesAsync.when(
                 data: (categories) {
                   final validIds = categories.map((c) => c.id).toSet();
-                  final value = validIds.contains(_categoryId) ? _categoryId : null;
+                  final value = validIds.contains(_categoryId)
+                      ? _categoryId
+                      : null;
                   return DropdownButtonFormField<int>(
                     initialValue: value,
                     decoration: const InputDecoration(labelText: 'Category'),
                     items: categories
-                        .map((c) => DropdownMenuItem(value: c.id, child: Text(c.name)))
+                        .map(
+                          (c) => DropdownMenuItem(
+                            value: c.id,
+                            child: Text(c.name),
+                          ),
+                        )
                         .toList(),
                     onChanged: (v) => setState(() => _categoryId = v),
-                    validator: (v) => v == null ? 'Please select a category' : null,
+                    validator: (v) =>
+                        v == null ? 'Please select a category' : null,
                   );
                 },
                 loading: () => const LinearProgressIndicator(),
@@ -192,15 +211,23 @@ class _TransactionEntryFormState extends ConsumerState<TransactionEntryForm> {
               accountsAsync.when(
                 data: (accounts) {
                   final validIds = accounts.map((a) => a.id).toSet();
-                  final value = validIds.contains(_accountId) ? _accountId : null;
+                  final value = validIds.contains(_accountId)
+                      ? _accountId
+                      : null;
                   return DropdownButtonFormField<int>(
                     initialValue: value,
                     decoration: const InputDecoration(labelText: 'Account'),
                     items: accounts
-                        .map((a) => DropdownMenuItem(value: a.id, child: Text(a.name)))
+                        .map(
+                          (a) => DropdownMenuItem(
+                            value: a.id,
+                            child: Text(a.name),
+                          ),
+                        )
                         .toList(),
                     onChanged: (v) => setState(() => _accountId = v),
-                    validator: (v) => v == null ? 'Please select an account' : null,
+                    validator: (v) =>
+                        v == null ? 'Please select an account' : null,
                   );
                 },
                 loading: () => const LinearProgressIndicator(),
@@ -209,7 +236,9 @@ class _TransactionEntryFormState extends ConsumerState<TransactionEntryForm> {
               const SizedBox(height: AppSpacing.md),
               TextFormField(
                 controller: _amountController,
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
                 decoration: InputDecoration(
                   labelText: 'Amount',
                   prefixIcon: Icon(Icons.payments_outlined, color: color),
@@ -224,7 +253,9 @@ class _TransactionEntryFormState extends ConsumerState<TransactionEntryForm> {
               const SizedBox(height: AppSpacing.md),
               TextFormField(
                 controller: _referenceController,
-                decoration: const InputDecoration(labelText: 'Reference Number'),
+                decoration: const InputDecoration(
+                  labelText: 'Reference Number',
+                ),
               ),
               const SizedBox(height: AppSpacing.md),
               TextFormField(
