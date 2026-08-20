@@ -69,6 +69,21 @@ class AccountDao {
     return count;
   }
 
+  /// Reactivates a previously-disabled account — the counterpart to
+  /// [disable]. Its transaction history (and cached balance, which was
+  /// never touched by disabling in the first place) is untouched.
+  Future<int> activate(int id) async {
+    final db = await AppDatabase.instance.database;
+    final count = await db.update(
+      'accounts',
+      {'is_active': 1, 'updated_at': DateTime.now().toIso8601String()},
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+    DbChangeNotifier.instance.notify(DbTable.accounts);
+    return count;
+  }
+
   /// Whether this account has any transaction or transfer history —
   /// used to guard destructive UI actions.
   Future<bool> hasTransactionHistory(int id) async {

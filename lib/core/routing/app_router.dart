@@ -465,11 +465,15 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                   onRecurringPayments: () =>
                       context.push('/recurring-payments'),
                   onBeginningBalanceTap: () => context.push('/periods'),
-                  onMoneyInTap: () => context.go('/transactions?type=income'),
-                  onMoneyOutTap: () => context.go('/transactions?type=expense'),
+                  onMoneyInTap: () => context.push('/reports/income'),
+                  onMoneyOutTap: () => context.push('/reports/expense'),
                   onNetMovementTap: () =>
                       context.push('/reports/financial-summary'),
                   onEndingBalanceTap: () => context.push('/periods'),
+                  onTotalAvailableFundsTap: () =>
+                      context.push('/reports/account'),
+                  onCashOnHandTap: () => context.go('/accounts?type=cash'),
+                  onCashInBankTap: () => context.go('/accounts?type=bank'),
                 ),
               ),
             ],
@@ -504,11 +508,17 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: '/accounts',
-                builder: (context, state) => AccountsListScreen(
-                  onTapAccount: (account) =>
-                      context.push('/accounts/${account.id}'),
-                  onAddAccount: () => context.push('/accounts/new'),
-                ),
+                builder: (context, state) {
+                  final typeParam = state.uri.queryParameters['type'];
+                  return AccountsListScreen(
+                    initialTypeFilter: typeParam != null
+                        ? AccountTypeX.fromStorage(typeParam)
+                        : null,
+                    onTapAccount: (account) =>
+                        context.push('/accounts/${account.id}'),
+                    onAddAccount: () => context.push('/accounts/new'),
+                  );
+                },
               ),
             ],
           ),

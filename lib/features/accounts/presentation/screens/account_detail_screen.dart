@@ -59,6 +59,10 @@ class AccountDetailScreen extends ConsumerWidget {
     onDisabled?.call();
   }
 
+  Future<void> _activate(WidgetRef ref) async {
+    await ref.read(accountFormControllerProvider).activateAccount(accountId);
+  }
+
   Future<void> _adjustBeginningBalance(
     BuildContext context,
     WidgetRef ref,
@@ -165,6 +169,8 @@ class AccountDetailScreen extends ConsumerWidget {
                     _confirmDisable(context, ref, account.name);
                   } else if (value == 'adjust_balance') {
                     _adjustBeginningBalance(context, ref, account);
+                  } else if (value == 'activate') {
+                    _activate(ref);
                   }
                 },
                 itemBuilder: (context) => [
@@ -178,6 +184,11 @@ class AccountDetailScreen extends ConsumerWidget {
                     const PopupMenuItem(
                       value: 'disable',
                       child: Text('Disable'),
+                    ),
+                  if (!account.isActive)
+                    const PopupMenuItem(
+                      value: 'activate',
+                      child: Text('Activate'),
                     ),
                 ],
               );
@@ -219,12 +230,22 @@ class AccountDetailScreen extends ConsumerWidget {
                 BalanceText(amount: account.currentBalance),
               if (!account.isActive) ...[
                 const SizedBox(height: AppSpacing.md),
-                const Text(
-                  'This account is inactive.',
-                  style: TextStyle(
-                    color: AppColors.textSecondary,
-                    fontWeight: FontWeight.w600,
-                  ),
+                Row(
+                  children: [
+                    const Expanded(
+                      child: Text(
+                        'This account is inactive.',
+                        style: TextStyle(
+                          color: AppColors.textSecondary,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                    OutlinedButton(
+                      onPressed: () => _activate(ref),
+                      child: const Text('Activate'),
+                    ),
+                  ],
                 ),
               ],
               const SizedBox(height: AppSpacing.xl),

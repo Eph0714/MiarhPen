@@ -22,10 +22,17 @@ class AccountsListScreen extends ConsumerStatefulWidget {
     super.key,
     required this.onTapAccount,
     required this.onAddAccount,
+    this.initialTypeFilter,
   });
 
   final void Function(Account account) onTapAccount;
   final VoidCallback onAddAccount;
+
+  /// When set (e.g. arrived here via the Dashboard's "Cash On Hand" or
+  /// "Cash in Bank" tile), the list opens pre-narrowed to just this
+  /// account type instead of showing every group. The user can still
+  /// clear it from the on-screen chip to see everything.
+  final AccountType? initialTypeFilter;
 
   @override
   ConsumerState<AccountsListScreen> createState() => _AccountsListScreenState();
@@ -35,6 +42,13 @@ class _AccountsListScreenState extends ConsumerState<AccountsListScreen> {
   final _searchController = TextEditingController();
   String _query = '';
   bool _showInactive = false;
+  AccountType? _typeFilter;
+
+  @override
+  void initState() {
+    super.initState();
+    _typeFilter = widget.initialTypeFilter;
+  }
 
   @override
   void dispose() {
@@ -59,7 +73,7 @@ class _AccountsListScreenState extends ConsumerState<AccountsListScreen> {
         error: (error, stack) =>
             Center(child: Text('Failed to load accounts: $error')),
         data: (accounts) {
-          final filtered = _query.isEmpty
+          var filtered = _query.isEmpty
               ? accounts
               : accounts
                     .where(
@@ -67,6 +81,9 @@ class _AccountsListScreenState extends ConsumerState<AccountsListScreen> {
                           a.name.toLowerCase().contains(_query.toLowerCase()),
                     )
                     .toList();
+          if (_typeFilter != null) {
+            filtered = filtered.where((a) => a.type == _typeFilter).toList();
+          }
 
           final active = filtered.where((a) => a.isActive).toList();
           final inactive = filtered.where((a) => !a.isActive).toList();
@@ -93,6 +110,22 @@ class _AccountsListScreenState extends ConsumerState<AccountsListScreen> {
                   onChanged: (value) => setState(() => _query = value),
                 ),
               ),
+              if (_typeFilter != null)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(
+                    AppSpacing.md,
+                    0,
+                    AppSpacing.md,
+                    AppSpacing.sm,
+                  ),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: InputChip(
+                      label: Text(_typeFilter!.label),
+                      onDeleted: () => setState(() => _typeFilter = null),
+                    ),
+                  ),
+                ),
               Expanded(
                 child: active.isEmpty && (!_showInactive || inactive.isEmpty)
                     ? const EmptyState(
@@ -204,13 +237,49 @@ class _AccountTile extends ConsumerWidget {
                 ),
                 if (!account.isActive) ...[
                   const SizedBox(height: AppSpacing.xs),
-                  const Text(
-                    'Inactive',
-                    style: TextStyle(
-                      color: AppColors.textSecondary,
-                      fontWeight: FontWeight.w600,
-                      fontSize: 12,
-                    ),
+                  Row(
+                    children: [
+                      const Text(
+                        'Inactive',
+                        style: TextStyle(
+                          color: AppColors.textSecondary,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 12,
+                        ),
+                      ),
+                      const SizedBox(width: AppSpacing.sm),
+                      InkWell(
+                        onTap: () => ref
+                            .read(accountFormControllerProvider)
+                            .activateAccount(account.id!),
+                        borderRadius: BorderRadius.circular(
+                          AppSpacing.chipRadius,
+                        ),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: AppSpacing.sm,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.primary.withValues(alpha: 0.12),
+                            borderRadius: BorderRadius.circular(
+                              AppSpacing.chipRadius,
+                            ),
+                            border: Border.all(
+                              color: AppColors.primary.withValues(alpha: 0.4),
+                            ),
+                          ),
+                          child: const Text(
+                            'Activate',
+                            style: TextStyle(
+                              color: AppColors.primary,
+                              fontWeight: FontWeight.w700,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ],

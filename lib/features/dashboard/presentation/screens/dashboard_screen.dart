@@ -36,6 +36,9 @@ class DashboardScreen extends ConsumerWidget {
     required this.onMoneyOutTap,
     required this.onNetMovementTap,
     required this.onEndingBalanceTap,
+    required this.onTotalAvailableFundsTap,
+    required this.onCashOnHandTap,
+    required this.onCashInBankTap,
   });
 
   final VoidCallback onAddIncome;
@@ -48,13 +51,20 @@ class DashboardScreen extends ConsumerWidget {
 
   /// Tapping each summary tile jumps to where that figure is broken down
   /// in more detail — Beginning/Ending Balance to the accounting period
-  /// that produced them, Money IN/OUT to Transaction History pre-filtered
-  /// to that type, and Net Movement to the Financial Summary report.
+  /// that produced them, Money IN to the Income Report, Money OUT to the
+  /// Expense Report, and Net Movement to the Financial Summary report.
   final VoidCallback onBeginningBalanceTap;
   final VoidCallback onMoneyInTap;
   final VoidCallback onMoneyOutTap;
   final VoidCallback onNetMovementTap;
   final VoidCallback onEndingBalanceTap;
+
+  /// Total Available Funds opens the Account Report (the per-account
+  /// breakdown that adds up to that total). Cash On Hand / Cash in Bank
+  /// open the Accounts list pre-filtered to just that account type.
+  final VoidCallback onTotalAvailableFundsTap;
+  final VoidCallback onCashOnHandTap;
+  final VoidCallback onCashInBankTap;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -143,18 +153,51 @@ class DashboardScreen extends ConsumerWidget {
                       ),
                       const SizedBox(height: AppSpacing.md),
                       AppCard(
+                        onTap: onTotalAvailableFundsTap,
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Text(
-                              'Total Available Funds',
-                              style: Theme.of(context).textTheme.bodyMedium,
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  'Total Available Funds',
+                                  style: Theme.of(context).textTheme.bodyMedium,
+                                ),
+                                const Icon(
+                                  Icons.chevron_right,
+                                  size: 18,
+                                  color: AppColors.textSecondary,
+                                ),
+                              ],
                             ),
                             const SizedBox(height: AppSpacing.xs),
                             BalanceText(amount: summary.totalAvailableFunds),
                           ],
                         ),
+                      ),
+                      const SizedBox(height: AppSpacing.sm),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: SummaryCard(
+                              label: 'Cash On Hand',
+                              amount: summary.cashOnHand,
+                              compact: true,
+                              onTap: onCashOnHandTap,
+                            ),
+                          ),
+                          const SizedBox(width: AppSpacing.sm),
+                          Expanded(
+                            child: SummaryCard(
+                              label: 'Cash in Bank',
+                              amount: summary.cashInBank,
+                              compact: true,
+                              onTap: onCashInBankTap,
+                            ),
+                          ),
+                        ],
                       ),
                       const SizedBox(height: AppSpacing.md),
                       GridView.count(

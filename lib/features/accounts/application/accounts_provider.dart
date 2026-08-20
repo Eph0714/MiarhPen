@@ -139,6 +139,10 @@ class AccountFormController {
     await _dao.disable(id);
   }
 
+  Future<void> activateAccount(int id) async {
+    await _dao.activate(id);
+  }
+
   /// The only sanctioned way to correct an account's starting figure
   /// after creation. Unlike a raw balance edit, this stays honest: it
   /// updates the stored `beginning_balance` fact, then hands off to the

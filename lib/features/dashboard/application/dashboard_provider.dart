@@ -11,6 +11,8 @@ import '../../transactions/domain/transaction_entry.dart';
 class DashboardSummary {
   const DashboardSummary({
     required this.totalAvailableFunds,
+    required this.cashOnHand,
+    required this.cashInBank,
     required this.beginningBalance,
     required this.totalMoneyIn,
     required this.totalMoneyOut,
@@ -21,6 +23,16 @@ class DashboardSummary {
   /// Sum of current balances across active cash/bank/e-wallet accounts
   /// (excludes credit cards / debit cards).
   final double totalAvailableFunds;
+
+  /// Sum of current balances across active [AccountType.cash] accounts.
+  final double cashOnHand;
+
+  /// Sum of current balances across active [AccountType.bank] accounts.
+  /// Deliberately excludes debit cards — they mirror their linked bank
+  /// account's balance rather than holding their own (see
+  /// [AccountTypeX.countsTowardAvailableFunds]), so including them would
+  /// double-count the same money.
+  final double cashInBank;
 
   /// The current open accounting period's beginning balance (0 if none).
   final double beginningBalance;
@@ -66,6 +78,12 @@ final dashboardSummaryProvider = StreamProvider.autoDispose<DashboardSummary>((
     final totalAvailableFunds = accounts
         .where((a) => a.type.countsTowardAvailableFunds)
         .fold<double>(0, (sum, a) => sum + a.currentBalance);
+    final cashOnHand = accounts
+        .where((a) => a.type == AccountType.cash)
+        .fold<double>(0, (sum, a) => sum + a.currentBalance);
+    final cashInBank = accounts
+        .where((a) => a.type == AccountType.bank)
+        .fold<double>(0, (sum, a) => sum + a.currentBalance);
 
     double beginningBalance = 0;
     double totalMoneyIn = 0;
@@ -78,6 +96,8 @@ final dashboardSummaryProvider = StreamProvider.autoDispose<DashboardSummary>((
 
     yield DashboardSummary(
       totalAvailableFunds: totalAvailableFunds,
+      cashOnHand: cashOnHand,
+      cashInBank: cashInBank,
       beginningBalance: beginningBalance,
       totalMoneyIn: totalMoneyIn,
       totalMoneyOut: totalMoneyOut,
