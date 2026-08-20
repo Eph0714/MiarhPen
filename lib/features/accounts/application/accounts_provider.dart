@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/constants/app_constants.dart';
 import '../../../core/db/daos/account_dao.dart';
+import '../../../core/db/daos/accounting_period_dao.dart';
 import '../../../core/db/db_change_notifier.dart';
 import '../../transactions/data/account_balance_recalculator.dart';
 import '../domain/account.dart';
@@ -58,10 +59,11 @@ final totalAvailableFundsProvider = Provider.autoDispose<AsyncValue<double>>((
 /// [DbChangeNotifier] calls to refresh the streams above — no manual
 /// invalidation needed.
 class AccountFormController {
-  AccountFormController(this._dao, this._recalculator);
+  AccountFormController(this._dao, this._recalculator, this._periodDao);
 
   final AccountDao _dao;
   final AccountBalanceRecalculator _recalculator;
+  final AccountingPeriodDao _periodDao;
 
   Future<void> createAccount({
     required String name,
@@ -150,10 +152,21 @@ class AccountFormController {
   /// through, so `currentBalance` is always re-derived from
   /// beginning_balance + transaction history — never hand-set — and stays
   /// consistent with every account-detail/report screen that reads it.
+  ///
+  /// Also shifts the currently open accounting period's own
+  /// `beginningBalance` by the same delta, if one is open. Without this,
+  /// correcting an account's starting figure updated that account's
+  /// balance everywhere it's summed (Total Available Funds, Cash On
+  /// Hand/in Bank, Account Report) but silently left the Dashboard's
+  /// "Beginning Balance"/"Ending Balance" tiles showing the old, now-wrong
+  /// figure — those are a frozen snapshot taken when the period was
+  /// opened (see openNewPeriod), not something that re-derives itself
+  /// from live account data on every read.
   Future<void> adjustBeginningBalance(
     Account existing,
     double newBeginningBalance,
   ) async {
+    final delta = newBeginningBalance - existing.beginningBalance;
     final updated = Account(
       id: existing.id,
       name: existing.name,
@@ -175,12 +188,28 @@ class AccountFormController {
     if (id != null) {
       await _recalculator.recalculateAccountBalance(id);
     }
+
+    if (delta != 0 && existing.type.countsTowardAvailableFunds) {
+      final openPeriod = await _periodDao.getOpenPeriod();
+      if (openPeriod != null) {
+        await _periodDao.update(
+          openPeriod.copyWith(
+            beginningBalance: openPeriod.beginningBalance + delta,
+          ),
+        );
+      }
+    }
   }
 }
+
+final _accountingPeriodDaoForAccountsProvider = Provider<AccountingPeriodDao>(
+  (ref) => AccountingPeriodDao(),
+);
 
 final accountFormControllerProvider = Provider<AccountFormController>((ref) {
   return AccountFormController(
     ref.watch(accountDaoProvider),
     ref.watch(accountBalanceRecalculatorProvider),
+    ref.watch(_accountingPeriodDaoForAccountsProvider),
   );
 });
