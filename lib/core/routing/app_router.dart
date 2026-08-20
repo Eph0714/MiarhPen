@@ -493,6 +493,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                     initialType: initialType,
                     onTapTransaction: (entry) =>
                         context.push('/transactions/${entry.id}'),
+                    onTapTransfer: (transfer) =>
+                        context.push('/transfers/edit/${transfer.id}'),
                   );
                 },
               ),
@@ -552,8 +554,33 @@ final appRouterProvider = Provider<GoRouter>((ref) {
 Future<void> _showCreatePeriodDialog(BuildContext context) async {
   final formKey = GlobalKey<FormState>();
   final nameController = TextEditingController();
-  final balanceController = TextEditingController(text: '0');
+
+  // Default the new period's beginning balance to the previous period's
+  // frozen ending balance — leaving this at 0 (the old hardcoded default)
+  // silently understated every "Ending Balance" figure computed from this
+  // period onward by however much money already existed going in. Falls
+  // back to the live sum of account balances when there's no prior closed
+  // period to carry forward from (e.g. the very first period).
+  final container = ProviderScope.containerOf(context, listen: false);
+  final lastClosed = await container
+      .read(accountingPeriodDaoProvider)
+      .getMostRecentlyClosed();
+  double defaultBalance;
+  if (lastClosed != null && lastClosed.endingBalance != null) {
+    defaultBalance = lastClosed.endingBalance!;
+  } else {
+    final accounts = await container
+        .read(accountDaoProvider)
+        .getAll(activeOnly: true);
+    defaultBalance = accounts
+        .where((a) => a.type.countsTowardAvailableFunds)
+        .fold<double>(0, (sum, a) => sum + a.currentBalance);
+  }
+  final balanceController = TextEditingController(
+    text: defaultBalance.toStringAsFixed(2),
+  );
   DateTime startDate = DateTime.now();
+  if (!context.mounted) return;
 
   await showDialog<void>(
     context: context,

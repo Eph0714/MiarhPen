@@ -56,6 +56,23 @@ class AccountingPeriodDao {
     return AccountingPeriod.fromMap(rows.first);
   }
 
+  /// The most recently closed period (by when it was closed), if any —
+  /// used to default a new period's beginning balance to the previous
+  /// period's frozen ending balance, so opening the next period doesn't
+  /// silently reset the running total to zero.
+  Future<AccountingPeriod?> getMostRecentlyClosed() async {
+    final db = await AppDatabase.instance.database;
+    final rows = await db.query(
+      'accounting_periods',
+      where: 'status = ?',
+      whereArgs: ['CLOSED'],
+      orderBy: 'closed_at DESC',
+      limit: 1,
+    );
+    if (rows.isEmpty) return null;
+    return AccountingPeriod.fromMap(rows.first);
+  }
+
   Future<int> closePeriod(
     int id,
     DateTime endDate,
