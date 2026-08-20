@@ -393,7 +393,7 @@ class _DataSettingsScreenState extends State<DataSettingsScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     'Push a snapshot of your data to a MySQL database on a '
                     'computer for viewing in MySQL Workbench, phpMyAdmin, '
                     'etc. This is one-way and for desktop viewing only — '

@@ -22,6 +22,10 @@ class SecureStorageService {
   static const String batteryOptimizationPrompted =
       'battery_optimization_prompted';
 
+  /// Key under which the user's chosen theme is stored: 'system', 'light',
+  /// or 'dark'. Absent means the default (system).
+  static const String themeMode = 'theme_mode';
+
   /// Keys under which the desktop MySQL export connection details are
   /// remembered (so the user doesn't have to retype them every sync) —
   /// stored in secure storage since one of them is a database password.

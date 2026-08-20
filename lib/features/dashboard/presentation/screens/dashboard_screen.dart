@@ -167,7 +167,7 @@ class DashboardScreen extends ConsumerWidget {
                                   'Total Available Funds',
                                   style: Theme.of(context).textTheme.bodyMedium,
                                 ),
-                                const Icon(
+                                Icon(
                                   Icons.chevron_right,
                                   size: 18,
                                   color: AppColors.textSecondary,

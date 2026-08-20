@@ -148,7 +148,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         const SizedBox(height: AppSpacing.sm),
                         Text(
                           _errorText!,
-                          style: const TextStyle(color: AppColors.expense),
+                          style: TextStyle(color: AppColors.expense),
                           textAlign: TextAlign.center,
                         ),
                       ],

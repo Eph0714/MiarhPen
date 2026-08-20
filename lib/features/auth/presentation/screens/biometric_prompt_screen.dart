@@ -59,11 +59,7 @@ class _BiometricPromptScreenState extends ConsumerState<BiometricPromptScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(
-                  Icons.fingerprint,
-                  size: 72,
-                  color: AppColors.primary,
-                ),
+                Icon(Icons.fingerprint, size: 72, color: AppColors.primary),
                 const SizedBox(height: AppSpacing.md),
                 Text(
                   _authenticating

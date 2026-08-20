@@ -5,6 +5,7 @@ import 'core/platform/battery_optimization_service.dart';
 import 'core/routing/app_router.dart';
 import 'core/security/secure_storage_service.dart';
 import 'core/theme/app_theme.dart';
+import 'core/theme/theme_mode_provider.dart';
 import 'features/auth/application/auth_provider.dart';
 import 'features/categories/application/seed_default_categories.dart';
 import 'features/recurring_payments/application/reschedule_recurring_payment_alarms.dart';
@@ -61,6 +62,7 @@ class _MiarhPenAppState extends ConsumerState<MiarhPenApp> {
   Widget build(BuildContext context) {
     final router = ref.watch(appRouterProvider);
     final sessionManager = ref.watch(sessionManagerProvider);
+    final themeMode = ref.watch(themeModeControllerProvider);
 
     ref.listen<AuthState>(authControllerProvider, (previous, next) {
       if (next.isLoggedIn && previous?.isLoggedIn != true) {
@@ -79,6 +81,19 @@ class _MiarhPenAppState extends ConsumerState<MiarhPenApp> {
         title: 'MiarhPen',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.light,
+        darkTheme: AppTheme.dark,
+        themeMode: themeMode,
+        // AppColors.x is a bunch of runtime getters (not fixed constants)
+        // so every custom widget/painter that reads it — outside of what
+        // ThemeData already drives automatically — follows whichever
+        // theme actually got resolved here, including ThemeMode.system
+        // resolving against the platform's brightness. This is the one
+        // place that syncs the two: it runs once per rebuild, always
+        // with the real resolved Theme available.
+        builder: (context, child) {
+          AppColors.setBrightness(Theme.of(context).brightness);
+          return child!;
+        },
         routerConfig: router,
       ),
     );

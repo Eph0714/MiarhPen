@@ -239,7 +239,7 @@ class _AccountTile extends ConsumerWidget {
                   const SizedBox(height: AppSpacing.xs),
                   Row(
                     children: [
-                      const Text(
+                      Text(
                         'Inactive',
                         style: TextStyle(
                           color: AppColors.textSecondary,
@@ -269,7 +269,7 @@ class _AccountTile extends ConsumerWidget {
                               color: AppColors.primary.withValues(alpha: 0.4),
                             ),
                           ),
-                          child: const Text(
+                          child: Text(
                             'Activate',
                             style: TextStyle(
                               color: AppColors.primary,

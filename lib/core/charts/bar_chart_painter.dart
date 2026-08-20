@@ -4,8 +4,11 @@ import '../theme/app_theme.dart';
 import 'chart_datum.dart';
 
 /// Default palette cycled through for bars without an explicit
-/// [ChartDatum.color].
-const List<Color> _defaultBarPalette = [
+/// [ChartDatum.color]. A getter, not a `const` list — [AppColors] values
+/// are runtime-resolved (light/dark theme), so this has to re-read them
+/// fresh on every access rather than freezing whatever they were at
+/// first use.
+List<Color> get _defaultBarPalette => [
   AppColors.primary,
   AppColors.income,
   AppColors.transfer,
@@ -132,7 +135,7 @@ class BarChartPainter extends CustomPainter {
         text: label,
         style:
             textStyle ??
-            const TextStyle(color: AppColors.textSecondary, fontSize: 10),
+            TextStyle(color: AppColors.textSecondary, fontSize: 10),
       ),
       textDirection: TextDirection.ltr,
       maxLines: 1,

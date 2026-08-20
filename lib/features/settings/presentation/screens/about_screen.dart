@@ -26,7 +26,7 @@ class AboutScreen extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                const Icon(
+                Icon(
                   Icons.account_balance_wallet,
                   size: 48,
                   color: AppColors.primary,
@@ -89,23 +89,20 @@ class AboutScreen extends ConsumerWidget {
               error: (_, __) => const Text('Unable to check for updates.'),
               data: (info) {
                 if (info == null) {
-                  return const Row(
+                  return Row(
                     children: [
                       Icon(
                         Icons.check_circle_outline,
                         color: AppColors.primary,
                       ),
-                      SizedBox(width: AppSpacing.sm),
-                      Text('You\'re on the latest version.'),
+                      const SizedBox(width: AppSpacing.sm),
+                      const Text('You\'re on the latest version.'),
                     ],
                   );
                 }
                 return Row(
                   children: [
-                    const Icon(
-                      Icons.system_update_alt,
-                      color: AppColors.liability,
-                    ),
+                    Icon(Icons.system_update_alt, color: AppColors.liability),
                     const SizedBox(width: AppSpacing.sm),
                     Expanded(
                       child: Text(

@@ -191,7 +191,7 @@ class TransactionDetailScreen extends ConsumerWidget {
                 OutlinedButton.icon(
                   style: OutlinedButton.styleFrom(
                     foregroundColor: AppColors.expense,
-                    side: const BorderSide(color: AppColors.expense),
+                    side: BorderSide(color: AppColors.expense),
                   ),
                   onPressed: () => _handleDelete(context, ref, entry),
                   icon: const Icon(Icons.delete_outline),
@@ -217,7 +217,7 @@ class TransactionDetailScreen extends ConsumerWidget {
             width: 130,
             child: Text(
               label,
-              style: const TextStyle(color: AppColors.textSecondary),
+              style: TextStyle(color: AppColors.textSecondary),
             ),
           ),
           Expanded(child: Text(value)),

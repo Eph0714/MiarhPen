@@ -60,7 +60,7 @@ class IncomeVsExpenseChart extends StatelessWidget {
           child: SizedBox(
             height: 20,
             child: total <= 0
-                ? const ColoredBox(color: AppColors.border)
+                ? ColoredBox(color: AppColors.border)
                 : LayoutBuilder(
                     builder: (context, constraints) {
                       final incomeWidth = constraints.maxWidth * incomeFraction;
@@ -70,14 +70,14 @@ class IncomeVsExpenseChart extends StatelessWidget {
                           // income is laid on top up to its own share —
                           // together they always cover exactly 100%
                           // regardless of rounding, with no gap between them.
-                          const ColoredBox(
+                          ColoredBox(
                             color: AppColors.expense,
-                            child: SizedBox.expand(),
+                            child: const SizedBox.expand(),
                           ),
                           SizedBox(
                             width: incomeWidth,
                             height: 20,
-                            child: const ColoredBox(color: AppColors.income),
+                            child: ColoredBox(color: AppColors.income),
                           ),
                         ],
                       );

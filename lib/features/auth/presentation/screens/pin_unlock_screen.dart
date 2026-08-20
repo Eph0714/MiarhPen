@@ -109,7 +109,7 @@ class _PinUnlockScreenState extends ConsumerState<PinUnlockScreen> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.lock_outline,
                       size: 56,
                       color: AppColors.primary,
@@ -136,7 +136,7 @@ class _PinUnlockScreenState extends ConsumerState<PinUnlockScreen> {
                       const SizedBox(height: AppSpacing.sm),
                       Text(
                         _errorText!,
-                        style: const TextStyle(color: AppColors.expense),
+                        style: TextStyle(color: AppColors.expense),
                         textAlign: TextAlign.center,
                       ),
                     ],

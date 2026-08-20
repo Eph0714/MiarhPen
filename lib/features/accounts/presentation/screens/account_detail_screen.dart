@@ -232,7 +232,7 @@ class AccountDetailScreen extends ConsumerWidget {
                 const SizedBox(height: AppSpacing.md),
                 Row(
                   children: [
-                    const Expanded(
+                    Expanded(
                       child: Text(
                         'This account is inactive.',
                         style: TextStyle(

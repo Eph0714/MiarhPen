@@ -38,11 +38,7 @@ class _UpdateBannerState extends ConsumerState<UpdateBanner> {
       color: AppColors.primaryContainer,
       child: Row(
         children: [
-          const Icon(
-            Icons.system_update_alt,
-            size: 20,
-            color: AppColors.primaryDark,
-          ),
+          Icon(Icons.system_update_alt, size: 20, color: AppColors.primaryDark),
           const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Text(

@@ -184,7 +184,7 @@ class _AccountFormScreenState extends ConsumerState<AccountFormScreen> {
                 ),
                 const SizedBox(height: AppSpacing.md),
               ] else ...[
-                const Text(
+                Text(
                   'Beginning balance can\'t be edited after creation — '
                   'changing it here would silently reshape historical '
                   'balances that were already calculated from it.',

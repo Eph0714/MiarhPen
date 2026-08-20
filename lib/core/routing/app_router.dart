@@ -31,6 +31,7 @@ import '../../features/recurring_payments/application/recurring_payments_provide
 import '../../features/recurring_payments/presentation/screens/recurring_payment_form_screen.dart';
 import '../../features/recurring_payments/presentation/screens/recurring_payments_list_screen.dart';
 import '../../features/settings/presentation/screens/about_screen.dart';
+import '../../features/settings/presentation/screens/appearance_settings_screen.dart';
 import '../../features/settings/presentation/screens/account_settings_screen.dart';
 import '../../features/settings/presentation/screens/accounting_settings_screen.dart';
 import '../../features/settings/presentation/screens/security_settings_screen.dart';
@@ -445,6 +446,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) => const AboutScreen(),
       ),
+      GoRoute(
+        path: '/settings/appearance',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const AppearanceSettingsScreen(),
+      ),
 
       // 5-tab bottom nav shell
       StatefulShellRoute.indexedStack(
@@ -550,6 +556,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                       context.push('/categories/expense'),
                   onData: () => context.push('/settings/data'),
                   onSecurity: () => context.push('/settings/security'),
+                  onAppearance: () => context.push('/settings/appearance'),
                   onAbout: () => context.push('/settings/about'),
                 ),
               ),

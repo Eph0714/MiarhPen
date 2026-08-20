@@ -5,8 +5,10 @@ import '../utils/currency_formatter.dart';
 import 'chart_datum.dart';
 
 /// Default palette cycled through when a [ChartDatum] has no explicit
-/// [ChartDatum.color] and the caller supplies no override palette.
-const List<Color> _defaultLegendPalette = [
+/// [ChartDatum.color] and the caller supplies no override palette. A
+/// getter, not `const` — see [_defaultBarPalette] in bar_chart_painter.dart
+/// for why.
+List<Color> get _defaultLegendPalette => [
   AppColors.primary,
   AppColors.income,
   AppColors.transfer,

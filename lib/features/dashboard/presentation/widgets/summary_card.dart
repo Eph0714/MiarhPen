@@ -40,7 +40,7 @@ class SummaryCard extends StatelessWidget {
             children: [
               Text(label, style: Theme.of(context).textTheme.bodyMedium),
               if (onTap != null)
-                const Icon(
+                Icon(
                   Icons.chevron_right,
                   size: 16,
                   color: AppColors.textSecondary,

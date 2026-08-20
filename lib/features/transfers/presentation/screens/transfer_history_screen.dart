@@ -66,7 +66,7 @@ class TransferHistoryScreen extends ConsumerWidget {
                           color: AppColors.transfer.withValues(alpha: 0.12),
                           shape: BoxShape.circle,
                         ),
-                        child: const Icon(
+                        child: Icon(
                           Icons.swap_horiz_rounded,
                           color: AppColors.transfer,
                         ),

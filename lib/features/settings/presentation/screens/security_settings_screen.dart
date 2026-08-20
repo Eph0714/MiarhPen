@@ -183,7 +183,7 @@ class _SecuritySettingsScreenState
                       OutlinedButton(
                         onPressed: _busy ? null : _removePin,
                         style: OutlinedButton.styleFrom(
-                          side: const BorderSide(color: AppColors.expense),
+                          side: BorderSide(color: AppColors.expense),
                           foregroundColor: AppColors.expense,
                         ),
                         child: const Text('Remove PIN'),

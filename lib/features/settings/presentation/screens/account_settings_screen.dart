@@ -92,7 +92,7 @@ class _AccountSettingsScreenState extends ConsumerState<AccountSettingsScreen> {
           AppCard(
             child: Row(
               children: [
-                const CircleAvatar(
+                CircleAvatar(
                   radius: 24,
                   backgroundColor: AppColors.primaryContainer,
                   child: Icon(Icons.person, color: AppColors.primary),
@@ -173,7 +173,7 @@ class _AccountSettingsScreenState extends ConsumerState<AccountSettingsScreen> {
                     child: ElevatedButton(
                       onPressed: _submitting ? null : _changePassword,
                       child: _submitting
-                          ? const SizedBox(
+                          ? SizedBox(
                               width: 20,
                               height: 20,
                               child: CircularProgressIndicator(
@@ -193,13 +193,13 @@ class _AccountSettingsScreenState extends ConsumerState<AccountSettingsScreen> {
             width: double.infinity,
             child: OutlinedButton.icon(
               onPressed: _logout,
-              icon: const Icon(Icons.logout, color: AppColors.expense),
-              label: const Text(
+              icon: Icon(Icons.logout, color: AppColors.expense),
+              label: Text(
                 'Log Out',
                 style: TextStyle(color: AppColors.expense),
               ),
               style: OutlinedButton.styleFrom(
-                side: const BorderSide(color: AppColors.expense),
+                side: BorderSide(color: AppColors.expense),
               ),
             ),
           ),

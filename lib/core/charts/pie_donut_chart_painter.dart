@@ -6,8 +6,10 @@ import '../theme/app_theme.dart';
 import 'chart_datum.dart';
 
 /// Default palette cycled through for donut segments without an explicit
-/// [ChartDatum.color]. Matches [BarChartPainter]'s default palette.
-const List<Color> _defaultDonutPalette = [
+/// [ChartDatum.color]. Matches [BarChartPainter]'s default palette. A
+/// getter, not `const` — see its counterpart in bar_chart_painter.dart for
+/// why.
+List<Color> get _defaultDonutPalette => [
   AppColors.primary,
   AppColors.income,
   AppColors.transfer,

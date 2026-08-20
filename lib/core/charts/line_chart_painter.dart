@@ -11,11 +11,8 @@ import 'chart_datum.dart';
 /// just the baseline/gridlines (no "No data" label), a single point draws
 /// only its marker.
 class LineChartPainter extends CustomPainter {
-  LineChartPainter({
-    required this.data,
-    this.lineColor = AppColors.primary,
-    this.textStyle,
-  });
+  LineChartPainter({required this.data, Color? lineColor, this.textStyle})
+    : lineColor = lineColor ?? AppColors.primary;
 
   final List<ChartDatum> data;
   final Color lineColor;
@@ -154,7 +151,7 @@ class LineChartPainter extends CustomPainter {
         text: label,
         style:
             textStyle ??
-            const TextStyle(color: AppColors.textSecondary, fontSize: 10),
+            TextStyle(color: AppColors.textSecondary, fontSize: 10),
       ),
       textDirection: TextDirection.ltr,
       maxLines: 1,
@@ -184,14 +181,17 @@ class LineChartPainter extends CustomPainter {
 class LineChart extends StatelessWidget {
   const LineChart({
     required this.data,
-    this.lineColor = AppColors.primary,
+    this.lineColor,
     this.height = 180,
     this.padding = const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
     super.key,
   });
 
   final List<ChartDatum> data;
-  final Color lineColor;
+
+  /// Defaults to [AppColors.primary] (resolved at build time, not a fixed
+  /// constant) when left unset.
+  final Color? lineColor;
   final double height;
   final EdgeInsets padding;
 

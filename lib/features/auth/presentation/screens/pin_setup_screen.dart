@@ -100,7 +100,7 @@ class _PinSetupScreenState extends ConsumerState<PinSetupScreen> {
                   const SizedBox(height: AppSpacing.sm),
                   Text(
                     _errorText!,
-                    style: const TextStyle(color: AppColors.expense),
+                    style: TextStyle(color: AppColors.expense),
                     textAlign: TextAlign.center,
                   ),
                 ],

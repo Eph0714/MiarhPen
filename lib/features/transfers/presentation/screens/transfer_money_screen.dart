@@ -151,10 +151,10 @@ class _TransferMoneyScreenState extends ConsumerState<TransferMoneyScreen> {
                     color: AppColors.transfer.withValues(alpha: 0.4),
                   ),
                 ),
-                child: const Row(
+                child: Row(
                   children: [
                     Icon(Icons.info_outline, color: AppColors.transfer),
-                    SizedBox(width: AppSpacing.sm),
+                    const SizedBox(width: AppSpacing.sm),
                     Expanded(
                       child: Text(
                         'Transfers move money between your own accounts. They are NOT '
@@ -241,7 +241,7 @@ class _TransferMoneyScreenState extends ConsumerState<TransferMoneyScreen> {
                 const SizedBox(height: AppSpacing.xs),
                 Text(
                   _accountsError!,
-                  style: const TextStyle(color: AppColors.expense),
+                  style: TextStyle(color: AppColors.expense),
                 ),
               ],
               const SizedBox(height: AppSpacing.md),
@@ -250,7 +250,7 @@ class _TransferMoneyScreenState extends ConsumerState<TransferMoneyScreen> {
                 keyboardType: const TextInputType.numberWithOptions(
                   decimal: true,
                 ),
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Amount',
                   prefixIcon: Icon(
                     Icons.payments_outlined,

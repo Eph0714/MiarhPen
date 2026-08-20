@@ -202,7 +202,7 @@ class _CategoryTile extends StatelessWidget {
                             AppSpacing.chipRadius,
                           ),
                         ),
-                        child: const Text(
+                        child: Text(
                           'Default',
                           style: TextStyle(
                             fontSize: 11,
@@ -225,10 +225,7 @@ class _CategoryTile extends StatelessWidget {
             ),
           ),
           IconButton(
-            icon: const Icon(
-              Icons.remove_circle_outline,
-              color: AppColors.expense,
-            ),
+            icon: Icon(Icons.remove_circle_outline, color: AppColors.expense),
             tooltip: 'Disable',
             onPressed: onDisable,
           ),

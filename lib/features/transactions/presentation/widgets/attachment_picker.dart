@@ -68,11 +68,8 @@ class AttachmentPicker extends StatelessWidget {
               ),
               if (initialPath != null)
                 ListTile(
-                  leading: const Icon(
-                    Icons.delete_outline,
-                    color: AppColors.expense,
-                  ),
-                  title: const Text(
+                  leading: Icon(Icons.delete_outline, color: AppColors.expense),
+                  title: Text(
                     'Remove Attachment',
                     style: TextStyle(color: AppColors.expense),
                   ),
@@ -108,18 +105,18 @@ class AttachmentPicker extends StatelessWidget {
             ? Image.file(
                 File(path),
                 fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) => const Center(
+                errorBuilder: (context, error, stackTrace) => Center(
                   child: Icon(
                     Icons.broken_image_outlined,
                     color: AppColors.textSecondary,
                   ),
                 ),
               )
-            : const Column(
+            : Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(Icons.add_a_photo_outlined, color: AppColors.primary),
-                  SizedBox(height: AppSpacing.xs),
+                  const SizedBox(height: AppSpacing.xs),
                   Text(
                     'Add Receipt',
                     style: TextStyle(

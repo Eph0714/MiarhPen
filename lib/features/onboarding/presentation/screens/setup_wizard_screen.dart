@@ -346,7 +346,7 @@ class _CredentialsStep extends StatelessWidget {
               confirmPasswordController.text.isNotEmpty &&
               passwordController.text != confirmPasswordController.text) ...[
             const SizedBox(height: AppSpacing.sm),
-            const Text(
+            Text(
               'Passwords do not match',
               style: TextStyle(color: AppColors.expense),
             ),
@@ -453,7 +453,7 @@ class _PeriodStep extends StatelessWidget {
                 },
                 child: Row(
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.calendar_today_outlined,
                       color: AppColors.primary,
                     ),
@@ -463,7 +463,7 @@ class _PeriodStep extends StatelessWidget {
                       style: Theme.of(context).textTheme.bodyLarge,
                     ),
                     const Spacer(),
-                    const Icon(
+                    Icon(
                       Icons.edit_outlined,
                       size: 18,
                       color: AppColors.textSecondary,
@@ -535,7 +535,7 @@ class _AccountsStep extends ConsumerWidget {
                       ),
                     ),
                     IconButton(
-                      icon: const Icon(
+                      icon: Icon(
                         Icons.delete_outline,
                         color: AppColors.expense,
                       ),
@@ -667,7 +667,7 @@ class _ReviewStep extends StatelessWidget {
           ),
           if (error != null) ...[
             const SizedBox(height: AppSpacing.md),
-            Text(error!, style: const TextStyle(color: AppColors.expense)),
+            Text(error!, style: TextStyle(color: AppColors.expense)),
           ],
         ],
       ),

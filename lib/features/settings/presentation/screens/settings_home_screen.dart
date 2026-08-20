@@ -16,6 +16,7 @@ class SettingsHomeScreen extends StatelessWidget {
     required this.onExpenseCategories,
     required this.onData,
     required this.onSecurity,
+    required this.onAppearance,
     required this.onAbout,
   });
 
@@ -26,6 +27,7 @@ class SettingsHomeScreen extends StatelessWidget {
   final VoidCallback onExpenseCategories;
   final VoidCallback onData;
   final VoidCallback onSecurity;
+  final VoidCallback onAppearance;
   final VoidCallback onAbout;
 
   @override
@@ -88,6 +90,14 @@ class SettingsHomeScreen extends StatelessWidget {
             subtitle: const Text('PIN, biometric, session timeout'),
             trailing: const Icon(Icons.chevron_right),
             onTap: onSecurity,
+          ),
+          _SectionHeader('Appearance'),
+          ListTile(
+            leading: const Icon(Icons.dark_mode_outlined),
+            title: const Text('Appearance'),
+            subtitle: const Text('Select Theme: Light, Dark, System'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: onAppearance,
           ),
           _SectionHeader('About'),
           ListTile(

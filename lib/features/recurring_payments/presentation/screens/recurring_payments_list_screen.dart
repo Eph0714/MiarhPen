@@ -135,11 +135,7 @@ class _RecurringPaymentRow extends StatelessWidget {
                     ),
                     if (payment.alarmEnabled) ...[
                       const SizedBox(width: AppSpacing.xs),
-                      const Icon(
-                        Icons.alarm,
-                        size: 16,
-                        color: AppColors.primary,
-                      ),
+                      Icon(Icons.alarm, size: 16, color: AppColors.primary),
                     ],
                   ],
                 ),

@@ -321,7 +321,7 @@ class _RecurringPaymentFormScreenState
                       const SizedBox(height: AppSpacing.sm),
                       ListTile(
                         contentPadding: EdgeInsets.zero,
-                        leading: const Icon(
+                        leading: Icon(
                           Icons.music_note_outlined,
                           color: AppColors.primary,
                         ),
@@ -387,11 +387,7 @@ class _TimePickerField extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(value),
-            const Icon(
-              Icons.access_time,
-              size: 18,
-              color: AppColors.textSecondary,
-            ),
+            Icon(Icons.access_time, size: 18, color: AppColors.textSecondary),
           ],
         ),
       ),
