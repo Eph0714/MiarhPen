@@ -20,7 +20,11 @@ class AboutScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                const Icon(Icons.account_balance_wallet, size: 48, color: AppColors.primary),
+                const Icon(
+                  Icons.account_balance_wallet,
+                  size: 48,
+                  color: AppColors.primary,
+                ),
                 const SizedBox(height: AppSpacing.sm),
                 Text(
                   AppConstants.appName,

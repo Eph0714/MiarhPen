@@ -8,7 +8,7 @@ import 'package:local_auth/local_auth.dart';
 /// app's own PIN/password flow — it should never crash the app.
 class BiometricService {
   BiometricService({LocalAuthentication? localAuthentication})
-      : _localAuthentication = localAuthentication ?? LocalAuthentication();
+    : _localAuthentication = localAuthentication ?? LocalAuthentication();
 
   final LocalAuthentication _localAuthentication;
 

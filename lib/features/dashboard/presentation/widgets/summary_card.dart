@@ -14,6 +14,7 @@ class SummaryCard extends StatelessWidget {
     required this.amount,
     this.color,
     this.compact = false,
+    this.onTap,
   });
 
   final String label;
@@ -21,16 +22,30 @@ class SummaryCard extends StatelessWidget {
   final Color? color;
   final bool compact;
 
+  /// When set, the whole tile becomes tappable (e.g. Money IN opens
+  /// Transaction History pre-filtered to income) and a chevron hints at
+  /// that.
+  final VoidCallback? onTap;
+
   @override
   Widget build(BuildContext context) {
     return AppCard(
+      onTap: onTap,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(
-            label,
-            style: Theme.of(context).textTheme.bodyMedium,
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(label, style: Theme.of(context).textTheme.bodyMedium),
+              if (onTap != null)
+                const Icon(
+                  Icons.chevron_right,
+                  size: 16,
+                  color: AppColors.textSecondary,
+                ),
+            ],
           ),
           const SizedBox(height: AppSpacing.xs),
           BalanceText(

@@ -57,7 +57,10 @@ class TransactionDetailScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Transaction Detail'),
-        leading: IconButton(icon: const Icon(Icons.close), onPressed: onClose),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: onClose,
+        ),
       ),
       body: LoadingOverlay(
         visible: submitState.isLoading,

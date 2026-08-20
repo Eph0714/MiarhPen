@@ -10,20 +10,17 @@ final accountingPeriodDaoProvider = Provider<AccountingPeriodDao>(
 );
 
 /// All accounting periods, newest (by start date) first.
-final periodsStreamProvider = StreamProvider.autoDispose<List<AccountingPeriod>>((
-  ref,
-) {
-  final dao = ref.watch(accountingPeriodDaoProvider);
-  return DbChangeNotifier.instance
-      .watch(DbTable.accountingPeriods)
-      .asyncMap((_) => dao.getAll());
-});
+final periodsStreamProvider =
+    StreamProvider.autoDispose<List<AccountingPeriod>>((ref) {
+      final dao = ref.watch(accountingPeriodDaoProvider);
+      return DbChangeNotifier.instance
+          .watch(DbTable.accountingPeriods)
+          .asyncMap((_) => dao.getAll());
+    });
 
 /// The currently open accounting period, if any. MiarhPen has at most one
 /// open period at a time.
-final openPeriodProvider = StreamProvider.autoDispose<AccountingPeriod?>((
-  ref,
-) {
+final openPeriodProvider = StreamProvider.autoDispose<AccountingPeriod?>((ref) {
   final dao = ref.watch(accountingPeriodDaoProvider);
   return DbChangeNotifier.instance
       .watch(DbTable.accountingPeriods)
@@ -31,15 +28,13 @@ final openPeriodProvider = StreamProvider.autoDispose<AccountingPeriod?>((
 });
 
 /// A single period by id, kept live via the accountingPeriods table stream.
-final periodByIdProvider = StreamProvider.autoDispose.family<AccountingPeriod?, int>((
-  ref,
-  id,
-) {
-  final dao = ref.watch(accountingPeriodDaoProvider);
-  return DbChangeNotifier.instance
-      .watch(DbTable.accountingPeriods)
-      .asyncMap((_) => dao.getById(id));
-});
+final periodByIdProvider = StreamProvider.autoDispose
+    .family<AccountingPeriod?, int>((ref, id) {
+      final dao = ref.watch(accountingPeriodDaoProvider);
+      return DbChangeNotifier.instance
+          .watch(DbTable.accountingPeriods)
+          .asyncMap((_) => dao.getById(id));
+    });
 
 /// Handles closing an open period and opening a new one.
 class ClosePeriodController {
@@ -57,7 +52,9 @@ class ClosePeriodController {
     final refreshed = await _dao.getById(periodId);
     if (refreshed == null) return;
     final endingBalance =
-        refreshed.beginningBalance + refreshed.totalIncome - refreshed.totalExpense;
+        refreshed.beginningBalance +
+        refreshed.totalIncome -
+        refreshed.totalExpense;
     await _dao.closePeriod(periodId, DateTime.now(), endingBalance);
   }
 

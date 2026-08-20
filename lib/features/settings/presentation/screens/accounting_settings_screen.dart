@@ -34,7 +34,10 @@ class AccountingSettingsScreen extends ConsumerWidget {
       body: ListView(
         padding: const EdgeInsets.all(AppSpacing.md),
         children: [
-          Text('Current Period', style: Theme.of(context).textTheme.titleMedium),
+          Text(
+            'Current Period',
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
           const SizedBox(height: AppSpacing.sm),
           AppCard(
             child: openPeriodAsync.when(
@@ -48,14 +51,21 @@ class AccountingSettingsScreen extends ConsumerWidget {
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(period.name, style: Theme.of(context).textTheme.titleMedium),
+                    Text(
+                      period.name,
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
                     const SizedBox(height: AppSpacing.xs),
-                    Text(dateRange, style: Theme.of(context).textTheme.bodyMedium),
+                    Text(
+                      dateRange,
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
                   ],
                 );
               },
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (_, __) => const Text('Unable to load the current period.'),
+              error: (_, __) =>
+                  const Text('Unable to load the current period.'),
             ),
           ),
           const SizedBox(height: AppSpacing.lg),

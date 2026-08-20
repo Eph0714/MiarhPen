@@ -11,10 +11,9 @@ import '../constants/app_constants.dart';
 /// idle timer resets without locking the app.
 class SessionManager extends ChangeNotifier {
   SessionManager({Duration? timeout})
-      : timeout = timeout ??
-            const Duration(
-              minutes: AppConstants.defaultSessionTimeoutMinutes,
-            );
+    : timeout =
+          timeout ??
+          const Duration(minutes: AppConstants.defaultSessionTimeoutMinutes);
 
   Duration timeout;
 

@@ -25,6 +25,19 @@ class RecurringPayment {
   final RecurringPaymentStatus status;
   final bool isActive;
   final DateTime? lastPaidDate;
+
+  /// Whether a local alarm/reminder notification fires on this schedule's
+  /// due date/time. When true and [alarmSoundUri] is set, the alarm plays
+  /// that sound (picked from the phone's own ringtone/alarm list via
+  /// RingtonePickerService) instead of the app's default notification
+  /// sound.
+  final bool alarmEnabled;
+  final String? alarmSoundUri;
+
+  /// Human-readable name of [alarmSoundUri] (e.g. "Bright Morning"), shown
+  /// in the form instead of the raw content URI.
+  final String? alarmSoundName;
+
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -41,6 +54,9 @@ class RecurringPayment {
     this.status = RecurringPaymentStatus.unpaid,
     this.isActive = true,
     this.lastPaidDate,
+    this.alarmEnabled = false,
+    this.alarmSoundUri,
+    this.alarmSoundName,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -70,6 +86,10 @@ class RecurringPayment {
     RecurringPaymentStatus? status,
     bool? isActive,
     DateTime? lastPaidDate,
+    bool? alarmEnabled,
+    String? alarmSoundUri,
+    String? alarmSoundName,
+    bool clearAlarmSound = false,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -86,6 +106,13 @@ class RecurringPayment {
       status: status ?? this.status,
       isActive: isActive ?? this.isActive,
       lastPaidDate: lastPaidDate ?? this.lastPaidDate,
+      alarmEnabled: alarmEnabled ?? this.alarmEnabled,
+      alarmSoundUri: clearAlarmSound
+          ? null
+          : (alarmSoundUri ?? this.alarmSoundUri),
+      alarmSoundName: clearAlarmSound
+          ? null
+          : (alarmSoundName ?? this.alarmSoundName),
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
@@ -143,6 +170,9 @@ class RecurringPayment {
       lastPaidDate: map['last_paid_date'] != null
           ? DateTime.parse(map['last_paid_date'] as String)
           : null,
+      alarmEnabled: (map['alarm_enabled'] as int? ?? 0) == 1,
+      alarmSoundUri: map['alarm_sound_uri'] as String?,
+      alarmSoundName: map['alarm_sound_name'] as String?,
       createdAt: DateTime.parse(map['created_at'] as String),
       updatedAt: DateTime.parse(map['updated_at'] as String),
     );
@@ -162,6 +192,9 @@ class RecurringPayment {
       'status': _statusToStorage(status),
       'is_active': isActive ? 1 : 0,
       'last_paid_date': lastPaidDate?.toIso8601String(),
+      'alarm_enabled': alarmEnabled ? 1 : 0,
+      'alarm_sound_uri': alarmSoundUri,
+      'alarm_sound_name': alarmSoundName,
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt.toIso8601String(),
     };

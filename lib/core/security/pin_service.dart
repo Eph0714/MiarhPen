@@ -10,7 +10,7 @@ import 'secure_storage_service.dart';
 /// password re-login).
 class PinService {
   PinService({SecureStorageService? secureStorageService})
-      : _secureStorageService = secureStorageService ?? SecureStorageService();
+    : _secureStorageService = secureStorageService ?? SecureStorageService();
 
   final SecureStorageService _secureStorageService;
 

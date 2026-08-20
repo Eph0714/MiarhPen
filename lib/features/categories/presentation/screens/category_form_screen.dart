@@ -29,8 +29,7 @@ class CategoryFormScreen extends ConsumerStatefulWidget {
   final VoidCallback onCancel;
 
   @override
-  ConsumerState<CategoryFormScreen> createState() =>
-      _CategoryFormScreenState();
+  ConsumerState<CategoryFormScreen> createState() => _CategoryFormScreenState();
 }
 
 class _CategoryFormScreenState extends ConsumerState<CategoryFormScreen> {
@@ -67,8 +66,9 @@ class _CategoryFormScreenState extends ConsumerState<CategoryFormScreen> {
     setState(() => _saving = true);
     final controller = ref.read(categoryFormControllerProvider);
     final name = _nameController.text.trim();
-    final description =
-        _descriptionController.text.trim().isEmpty ? null : _descriptionController.text.trim();
+    final description = _descriptionController.text.trim().isEmpty
+        ? null
+        : _descriptionController.text.trim();
 
     try {
       if (_isEditing) {
@@ -113,7 +113,7 @@ class _CategoryFormScreenState extends ConsumerState<CategoryFormScreen> {
       appBar: AppBar(
         title: Text(_isEditing ? 'Edit $title' : 'Add $title'),
         leading: IconButton(
-          icon: const Icon(Icons.close),
+          icon: const Icon(Icons.arrow_back),
           onPressed: widget.onCancel,
         ),
       ),
@@ -127,12 +127,15 @@ class _CategoryFormScreenState extends ConsumerState<CategoryFormScreen> {
               TextFormField(
                 controller: _nameController,
                 decoration: const InputDecoration(labelText: 'Category Name'),
-                validator: (v) => Validators.required(v, fieldName: 'Category name'),
+                validator: (v) =>
+                    Validators.required(v, fieldName: 'Category name'),
               ),
               const SizedBox(height: AppSpacing.md),
               TextFormField(
                 controller: _descriptionController,
-                decoration: const InputDecoration(labelText: 'Description (optional)'),
+                decoration: const InputDecoration(
+                  labelText: 'Description (optional)',
+                ),
               ),
               const SizedBox(height: AppSpacing.lg),
               FilledButton(

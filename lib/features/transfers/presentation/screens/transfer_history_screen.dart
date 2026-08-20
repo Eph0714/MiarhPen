@@ -19,7 +19,9 @@ class TransferHistoryScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final transfersAsync = ref.watch(transfersStreamProvider(const TransfersFilter()));
+    final transfersAsync = ref.watch(
+      transfersStreamProvider(const TransfersFilter()),
+    );
     final accountsAsync = ref.watch(accountsStreamProvider(false));
 
     return Scaffold(
@@ -64,7 +66,10 @@ class TransferHistoryScreen extends ConsumerWidget {
                           color: AppColors.transfer.withValues(alpha: 0.12),
                           shape: BoxShape.circle,
                         ),
-                        child: const Icon(Icons.swap_horiz_rounded, color: AppColors.transfer),
+                        child: const Icon(
+                          Icons.swap_horiz_rounded,
+                          color: AppColors.transfer,
+                        ),
                       ),
                       const SizedBox(width: AppSpacing.md),
                       Expanded(
@@ -73,9 +78,8 @@ class TransferHistoryScreen extends ConsumerWidget {
                           children: [
                             Text(
                               '${accountName(t.fromAccountId)} → ${accountName(t.toAccountId)}',
-                              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                                    fontWeight: FontWeight.w600,
-                                  ),
+                              style: Theme.of(context).textTheme.bodyLarge
+                                  ?.copyWith(fontWeight: FontWeight.w600),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -83,7 +87,8 @@ class TransferHistoryScreen extends ConsumerWidget {
                             Text(
                               [
                                 DateFormatter.short(t.date),
-                                if (t.referenceNumber != null && t.referenceNumber!.isNotEmpty)
+                                if (t.referenceNumber != null &&
+                                    t.referenceNumber!.isNotEmpty)
                                   t.referenceNumber!,
                               ].join(' · '),
                               style: Theme.of(context).textTheme.bodySmall,
@@ -106,9 +111,9 @@ class TransferHistoryScreen extends ConsumerWidget {
                       Text(
                         CurrencyFormatter.format(t.amount),
                         style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                              color: AppColors.transfer,
-                              fontWeight: FontWeight.w700,
-                            ),
+                          color: AppColors.transfer,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                     ],
                   ),

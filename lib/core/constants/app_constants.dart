@@ -15,9 +15,10 @@ class AppConstants {
   static const int maxPinLength = 6;
 
   static const String dbFileName = 'miarhpen.db';
-  // v2 adds the `recurring_payments` table (additive-only migration — see
-  // AppDatabase.onUpgrade — existing tables/rows are never touched).
-  static const int dbVersion = 2;
+  // v2 adds the `recurring_payments` table; v3 adds its alarm_* columns.
+  // Both are additive-only migrations — see AppDatabase.onUpgrade —
+  // existing tables/rows are never touched.
+  static const int dbVersion = 3;
 }
 
 /// Account types per spec section 9.

@@ -160,7 +160,7 @@ class _TransactionEntryFormState extends ConsumerState<TransactionEntryForm> {
               : (isIncome ? 'Add Income' : 'Add Expense'),
         ),
         leading: IconButton(
-          icon: const Icon(Icons.close),
+          icon: const Icon(Icons.arrow_back),
           onPressed: widget.onCancel,
         ),
       ),

@@ -17,11 +17,7 @@ const List<Color> _defaultLegendPalette = [
 /// Compact legend for chart widgets: a colored dot + label + formatted
 /// currency value per [ChartDatum], wrapped to fit within a card.
 class ChartLegend extends StatelessWidget {
-  const ChartLegend({
-    required this.data,
-    this.colors,
-    super.key,
-  });
+  const ChartLegend({required this.data, this.colors, super.key});
 
   /// Data points to render, one row each.
   final List<ChartDatum> data;
@@ -80,10 +76,7 @@ class _LegendRow extends StatelessWidget {
         Container(
           width: 10,
           height: 10,
-          decoration: BoxDecoration(
-            color: color,
-            shape: BoxShape.circle,
-          ),
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
         ),
         const SizedBox(width: AppSpacing.xs),
         Text(

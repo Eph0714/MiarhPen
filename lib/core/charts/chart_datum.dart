@@ -6,11 +6,7 @@ import 'package:flutter/material.dart';
 /// [color] is an optional per-datum override; painters that don't receive
 /// an explicit color fall back to cycling through a default palette.
 class ChartDatum {
-  const ChartDatum({
-    required this.label,
-    required this.value,
-    this.color,
-  });
+  const ChartDatum({required this.label, required this.value, this.color});
 
   /// Human-readable label shown on axes / legends (e.g. category name).
   final String label;

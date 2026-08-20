@@ -125,7 +125,7 @@ class _AccountFormScreenState extends ConsumerState<AccountFormScreen> {
       appBar: AppBar(
         title: Text(_isEditing ? 'Edit Account' : 'Add Account'),
         leading: IconButton(
-          icon: const Icon(Icons.close),
+          icon: const Icon(Icons.arrow_back),
           onPressed: widget.onCancel,
         ),
       ),

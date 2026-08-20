@@ -219,48 +219,51 @@ class SetupWizardController extends Notifier<SetupWizardState> {
       // actually finish. Wrapping the whole sequence atomically means any
       // failure rolls back cleanly and a retry starts from a clean slate.
       final db = await AppDatabase.instance.database;
-      final userId = existingUser?.id ?? await db.transaction<int>((txn) async {
-        final insertedUserId = await txn.insert(
-          'users',
-          AppUser(
-            username: state.username.trim(),
-            passwordHash: passwordHash,
-            sessionTimeoutMin: AppConstants.defaultSessionTimeoutMinutes,
-            currencyCode: state.currencyCode,
-            currencySymbol: state.currencySymbol,
-            createdAt: now,
-            updatedAt: now,
-          ).toMap(),
-        );
+      final userId =
+          existingUser?.id ??
+          await db.transaction<int>((txn) async {
+            final insertedUserId = await txn.insert(
+              'users',
+              AppUser(
+                username: state.username.trim(),
+                passwordHash: passwordHash,
+                sessionTimeoutMin: AppConstants.defaultSessionTimeoutMinutes,
+                currencyCode: state.currencyCode,
+                currencySymbol: state.currencySymbol,
+                createdAt: now,
+                updatedAt: now,
+              ).toMap(),
+            );
 
-        for (final draft in state.initialAccounts) {
-          await txn.insert(
-            'accounts',
-            Account(
-              name: draft.name,
-              type: draft.type,
-              beginningBalance: draft.beginningBalance,
-              currentBalance: draft.beginningBalance,
-              outstandingBalance:
-                  draft.type == AccountType.creditCard ? 0 : null,
-              createdAt: now,
-              updatedAt: now,
-            ).toMap(),
-          );
-        }
+            for (final draft in state.initialAccounts) {
+              await txn.insert(
+                'accounts',
+                Account(
+                  name: draft.name,
+                  type: draft.type,
+                  beginningBalance: draft.beginningBalance,
+                  currentBalance: draft.beginningBalance,
+                  outstandingBalance: draft.type == AccountType.creditCard
+                      ? 0
+                      : null,
+                  createdAt: now,
+                  updatedAt: now,
+                ).toMap(),
+              );
+            }
 
-        await txn.insert(
-          'accounting_periods',
-          AccountingPeriod(
-            name: state.periodName,
-            startDate: state.periodStartDate,
-            beginningBalance: state.beginningBalanceTotal,
-            createdAt: now,
-          ).toMap(),
-        );
+            await txn.insert(
+              'accounting_periods',
+              AccountingPeriod(
+                name: state.periodName,
+                startDate: state.periodStartDate,
+                beginningBalance: state.beginningBalanceTotal,
+                createdAt: now,
+              ).toMap(),
+            );
 
-        return insertedUserId;
-      });
+            return insertedUserId;
+          });
 
       DbChangeNotifier.instance.notifyAll(const [
         DbTable.users,
@@ -295,8 +298,9 @@ class SetupWizardController extends Notifier<SetupWizardState> {
       ref.invalidate(currentUserProvider);
 
       if (createdUser != null) {
-        ref.read(authControllerProvider.notifier).state =
-            AuthState.loggedIn(createdUser);
+        ref.read(authControllerProvider.notifier).state = AuthState.loggedIn(
+          createdUser,
+        );
       }
 
       state = state.copyWith(isSubmitting: false, clearError: true);
@@ -309,5 +313,5 @@ class SetupWizardController extends Notifier<SetupWizardState> {
 
 final setupWizardControllerProvider =
     NotifierProvider<SetupWizardController, SetupWizardState>(
-  SetupWizardController.new,
-);
+      SetupWizardController.new,
+    );

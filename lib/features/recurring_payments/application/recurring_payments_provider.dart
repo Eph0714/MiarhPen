@@ -5,6 +5,7 @@ import '../../../core/constants/app_constants.dart';
 import '../../../core/db/daos/recurring_payment_dao.dart';
 import '../../../core/db/db_change_notifier.dart';
 import '../domain/recurring_payment.dart';
+import 'recurring_payment_alarm_service.dart';
 
 final recurringPaymentDaoProvider = Provider<RecurringPaymentDao>(
   (ref) => RecurringPaymentDao(),
@@ -30,9 +31,10 @@ final recurringPaymentByIdProvider = StreamProvider.autoDispose
     });
 
 class RecurringPaymentController {
-  RecurringPaymentController(this._dao);
+  RecurringPaymentController(this._dao, this._alarmService);
 
   final RecurringPaymentDao _dao;
+  final RecurringPaymentAlarmService _alarmService;
 
   Future<int> create({
     required String name,
@@ -43,6 +45,9 @@ class RecurringPaymentController {
     required int dayOfMonth,
     TimeOfDay? startTime,
     TimeOfDay? endTime,
+    bool alarmEnabled = false,
+    String? alarmSoundUri,
+    String? alarmSoundName,
   }) async {
     final now = DateTime.now();
     final payment = RecurringPayment(
@@ -54,25 +59,36 @@ class RecurringPaymentController {
       dayOfMonth: dayOfMonth,
       startTime: startTime,
       endTime: endTime,
+      alarmEnabled: alarmEnabled,
+      alarmSoundUri: alarmSoundUri,
+      alarmSoundName: alarmSoundName,
       createdAt: now,
       updatedAt: now,
     );
-    return _dao.insert(payment);
+    final id = await _dao.insert(payment);
+    await _alarmService.schedule(payment.copyWith(id: id));
+    return id;
   }
 
   Future<void> save(RecurringPayment payment) async {
-    await _dao.update(payment.copyWith(updatedAt: DateTime.now()));
+    final updated = payment.copyWith(updatedAt: DateTime.now());
+    await _dao.update(updated);
+    await _alarmService.schedule(updated);
   }
 
   Future<void> setStatus(int id, RecurringPaymentStatus status) {
     return _dao.setStatus(id, status);
   }
 
-  Future<void> disable(int id) {
-    return _dao.disable(id);
+  Future<void> disable(int id) async {
+    await _dao.disable(id);
+    await _alarmService.cancel(id);
   }
 }
 
 final recurringPaymentControllerProvider = Provider<RecurringPaymentController>(
-  (ref) => RecurringPaymentController(ref.watch(recurringPaymentDaoProvider)),
+  (ref) => RecurringPaymentController(
+    ref.watch(recurringPaymentDaoProvider),
+    RecurringPaymentAlarmService.instance,
+  ),
 );

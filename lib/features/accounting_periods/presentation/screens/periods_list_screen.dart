@@ -94,7 +94,10 @@ class _PeriodRow extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(period.name, style: Theme.of(context).textTheme.titleMedium),
+                Text(
+                  period.name,
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
                 const SizedBox(height: AppSpacing.xs),
                 Text(dateRange, style: Theme.of(context).textTheme.bodyMedium),
                 if (period.isClosed && period.endingBalance != null) ...[
@@ -102,9 +105,9 @@ class _PeriodRow extends StatelessWidget {
                   Text(
                     'Ending Balance: ${CurrencyFormatter.format(period.endingBalance!)}',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: AppColors.textPrimary,
-                          fontWeight: FontWeight.w600,
-                        ),
+                      color: AppColors.textPrimary,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ],
               ],
@@ -127,7 +130,10 @@ class _StatusBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     final color = isOpen ? AppColors.primary : AppColors.textSecondary;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: 4),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.sm,
+        vertical: 4,
+      ),
       decoration: BoxDecoration(
         color: isOpen ? AppColors.primaryContainer : AppColors.surfaceMuted,
         borderRadius: BorderRadius.circular(AppSpacing.chipRadius),

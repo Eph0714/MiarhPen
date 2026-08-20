@@ -40,7 +40,9 @@ class _AccountSettingsScreenState extends ConsumerState<AccountSettingsScreen> {
     if (!(_formKey.currentState?.validate() ?? false)) return;
     setState(() => _submitting = true);
     try {
-      await ref.read(authControllerProvider.notifier).changePassword(
+      await ref
+          .read(authControllerProvider.notifier)
+          .changePassword(
             _currentPasswordController.text,
             _newPasswordController.text,
           );
@@ -48,9 +50,9 @@ class _AccountSettingsScreenState extends ConsumerState<AccountSettingsScreen> {
       _newPasswordController.clear();
       _confirmPasswordController.clear();
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Password changed.')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Password changed.')));
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -119,7 +121,10 @@ class _AccountSettingsScreenState extends ConsumerState<AccountSettingsScreen> {
             ),
           ),
           const SizedBox(height: AppSpacing.lg),
-          Text('Change Password', style: Theme.of(context).textTheme.titleMedium),
+          Text(
+            'Change Password',
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
           const SizedBox(height: AppSpacing.sm),
           AppCard(
             child: Form(
@@ -129,7 +134,9 @@ class _AccountSettingsScreenState extends ConsumerState<AccountSettingsScreen> {
                   TextFormField(
                     controller: _currentPasswordController,
                     obscureText: true,
-                    decoration: const InputDecoration(labelText: 'Current Password'),
+                    decoration: const InputDecoration(
+                      labelText: 'Current Password',
+                    ),
                     validator: (v) =>
                         (v == null || v.isEmpty) ? 'Required' : null,
                   ),
@@ -137,7 +144,9 @@ class _AccountSettingsScreenState extends ConsumerState<AccountSettingsScreen> {
                   TextFormField(
                     controller: _newPasswordController,
                     obscureText: true,
-                    decoration: const InputDecoration(labelText: 'New Password'),
+                    decoration: const InputDecoration(
+                      labelText: 'New Password',
+                    ),
                     validator: (v) {
                       if (v == null || v.isEmpty) return 'Required';
                       if (v.length < 6) return 'At least 6 characters';
@@ -148,7 +157,9 @@ class _AccountSettingsScreenState extends ConsumerState<AccountSettingsScreen> {
                   TextFormField(
                     controller: _confirmPasswordController,
                     obscureText: true,
-                    decoration: const InputDecoration(labelText: 'Confirm New Password'),
+                    decoration: const InputDecoration(
+                      labelText: 'Confirm New Password',
+                    ),
                     validator: (v) {
                       if (v != _newPasswordController.text) {
                         return 'Passwords do not match';
@@ -183,7 +194,10 @@ class _AccountSettingsScreenState extends ConsumerState<AccountSettingsScreen> {
             child: OutlinedButton.icon(
               onPressed: _logout,
               icon: const Icon(Icons.logout, color: AppColors.expense),
-              label: const Text('Log Out', style: TextStyle(color: AppColors.expense)),
+              label: const Text(
+                'Log Out',
+                style: TextStyle(color: AppColors.expense),
+              ),
               style: OutlinedButton.styleFrom(
                 side: const BorderSide(color: AppColors.expense),
               ),

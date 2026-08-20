@@ -6,27 +6,29 @@ import '../../../core/db/db_change_notifier.dart';
 import '../domain/expense_category.dart';
 import '../domain/income_category.dart';
 
-final incomeCategoryDaoProvider =
-    Provider<IncomeCategoryDao>((ref) => IncomeCategoryDao());
+final incomeCategoryDaoProvider = Provider<IncomeCategoryDao>(
+  (ref) => IncomeCategoryDao(),
+);
 
-final expenseCategoryDaoProvider =
-    Provider<ExpenseCategoryDao>((ref) => ExpenseCategoryDao());
+final expenseCategoryDaoProvider = Provider<ExpenseCategoryDao>(
+  (ref) => ExpenseCategoryDao(),
+);
 
 final incomeCategoriesStreamProvider =
     StreamProvider.autoDispose<List<IncomeCategory>>((ref) {
-  final dao = ref.watch(incomeCategoryDaoProvider);
-  return DbChangeNotifier.instance
-      .watch(DbTable.incomeCategories)
-      .asyncMap((_) => dao.getAll());
-});
+      final dao = ref.watch(incomeCategoryDaoProvider);
+      return DbChangeNotifier.instance
+          .watch(DbTable.incomeCategories)
+          .asyncMap((_) => dao.getAll());
+    });
 
 final expenseCategoriesStreamProvider =
     StreamProvider.autoDispose<List<ExpenseCategory>>((ref) {
-  final dao = ref.watch(expenseCategoryDaoProvider);
-  return DbChangeNotifier.instance
-      .watch(DbTable.expenseCategories)
-      .asyncMap((_) => dao.getAll());
-});
+      final dao = ref.watch(expenseCategoryDaoProvider);
+      return DbChangeNotifier.instance
+          .watch(DbTable.expenseCategories)
+          .asyncMap((_) => dao.getAll());
+    });
 
 /// Handles create/update/disable for both income and expense categories.
 /// Mutations rely on the DAOs' own [DbChangeNotifier] calls to refresh the
@@ -98,9 +100,7 @@ class CategoryFormController {
   }
 }
 
-final categoryFormControllerProvider = Provider<CategoryFormController>((
-  ref,
-) {
+final categoryFormControllerProvider = Provider<CategoryFormController>((ref) {
   return CategoryFormController(
     ref.watch(incomeCategoryDaoProvider),
     ref.watch(expenseCategoryDaoProvider),

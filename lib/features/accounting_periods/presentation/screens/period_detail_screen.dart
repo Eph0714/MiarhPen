@@ -71,16 +71,22 @@ class _PeriodDetailScreenState extends ConsumerState<PeriodDetailScreen> {
 
           final isOpen = period.status == AccountingPeriodStatus.open;
           final liveEndingBalance =
-              period.beginningBalance + period.totalIncome - period.totalExpense;
-          final displayedEndingBalance =
-              isOpen ? liveEndingBalance : (period.endingBalance ?? liveEndingBalance);
+              period.beginningBalance +
+              period.totalIncome -
+              period.totalExpense;
+          final displayedEndingBalance = isOpen
+              ? liveEndingBalance
+              : (period.endingBalance ?? liveEndingBalance);
 
           return LoadingOverlay(
             visible: _closing,
             child: ListView(
               padding: const EdgeInsets.all(AppSpacing.md),
               children: [
-                Text(period.name, style: Theme.of(context).textTheme.headlineMedium),
+                Text(
+                  period.name,
+                  style: Theme.of(context).textTheme.headlineMedium,
+                ),
                 const SizedBox(height: AppSpacing.xs),
                 Text(
                   period.endDate != null
@@ -110,7 +116,9 @@ class _PeriodDetailScreenState extends ConsumerState<PeriodDetailScreen> {
                       ),
                       const Divider(height: AppSpacing.lg),
                       _StatRow(
-                        label: isOpen ? 'Ending Balance (live)' : 'Ending Balance',
+                        label: isOpen
+                            ? 'Ending Balance (live)'
+                            : 'Ending Balance',
                         amount: displayedEndingBalance,
                         emphasize: true,
                       ),

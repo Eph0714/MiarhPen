@@ -31,6 +31,11 @@ class DashboardScreen extends ConsumerWidget {
     required this.onReports,
     required this.onViewAccounts,
     required this.onRecurringPayments,
+    required this.onBeginningBalanceTap,
+    required this.onMoneyInTap,
+    required this.onMoneyOutTap,
+    required this.onNetMovementTap,
+    required this.onEndingBalanceTap,
   });
 
   final VoidCallback onAddIncome;
@@ -40,6 +45,16 @@ class DashboardScreen extends ConsumerWidget {
   final VoidCallback onReports;
   final VoidCallback onViewAccounts;
   final VoidCallback onRecurringPayments;
+
+  /// Tapping each summary tile jumps to where that figure is broken down
+  /// in more detail — Beginning/Ending Balance to the accounting period
+  /// that produced them, Money IN/OUT to Transaction History pre-filtered
+  /// to that type, and Net Movement to the Financial Summary report.
+  final VoidCallback onBeginningBalanceTap;
+  final VoidCallback onMoneyInTap;
+  final VoidCallback onMoneyOutTap;
+  final VoidCallback onNetMovementTap;
+  final VoidCallback onEndingBalanceTap;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -154,18 +169,21 @@ class DashboardScreen extends ConsumerWidget {
                             label: 'Beginning Balance',
                             amount: summary.beginningBalance,
                             compact: true,
+                            onTap: onBeginningBalanceTap,
                           ),
                           SummaryCard(
                             label: 'Money IN',
                             amount: summary.totalMoneyIn,
                             color: AppColors.income,
                             compact: true,
+                            onTap: onMoneyInTap,
                           ),
                           SummaryCard(
                             label: 'Money OUT',
                             amount: summary.totalMoneyOut,
                             color: AppColors.expense,
                             compact: true,
+                            onTap: onMoneyOutTap,
                           ),
                           SummaryCard(
                             label: 'Net Movement',
@@ -174,6 +192,7 @@ class DashboardScreen extends ConsumerWidget {
                                 ? AppColors.expense
                                 : AppColors.income,
                             compact: true,
+                            onTap: onNetMovementTap,
                           ),
                         ],
                       ),
@@ -182,6 +201,7 @@ class DashboardScreen extends ConsumerWidget {
                         label: 'Ending Balance',
                         amount: summary.endingBalance,
                         compact: true,
+                        onTap: onEndingBalanceTap,
                       ),
                       const SizedBox(height: AppSpacing.lg),
                       AppCard(

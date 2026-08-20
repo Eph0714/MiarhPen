@@ -61,10 +61,7 @@ class AccountDao {
     final db = await AppDatabase.instance.database;
     final count = await db.update(
       'accounts',
-      {
-        'is_active': 0,
-        'updated_at': DateTime.now().toIso8601String(),
-      },
+      {'is_active': 0, 'updated_at': DateTime.now().toIso8601String()},
       where: 'id = ?',
       whereArgs: [id],
     );

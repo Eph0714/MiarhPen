@@ -464,6 +464,12 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                   onViewAccounts: () => context.go('/accounts'),
                   onRecurringPayments: () =>
                       context.push('/recurring-payments'),
+                  onBeginningBalanceTap: () => context.push('/periods'),
+                  onMoneyInTap: () => context.go('/transactions?type=income'),
+                  onMoneyOutTap: () => context.go('/transactions?type=expense'),
+                  onNetMovementTap: () =>
+                      context.push('/reports/financial-summary'),
+                  onEndingBalanceTap: () => context.push('/periods'),
                 ),
               ),
             ],
@@ -474,10 +480,17 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                 path: '/transactions',
                 builder: (context, state) {
                   final accountIdParam = state.uri.queryParameters['accountId'];
+                  final typeParam = state.uri.queryParameters['type'];
+                  final initialType = switch (typeParam) {
+                    'income' => TransactionType.income,
+                    'expense' => TransactionType.expense,
+                    _ => null,
+                  };
                   return TransactionHistoryScreen(
                     initialAccountId: accountIdParam != null
                         ? int.tryParse(accountIdParam)
                         : null,
+                    initialType: initialType,
                     onTapTransaction: (entry) =>
                         context.push('/transactions/${entry.id}'),
                   );

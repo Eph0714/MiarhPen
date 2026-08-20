@@ -125,9 +125,23 @@ class _RecurringPaymentRow extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  payment.name,
-                  style: Theme.of(context).textTheme.titleMedium,
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        payment.name,
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                    ),
+                    if (payment.alarmEnabled) ...[
+                      const SizedBox(width: AppSpacing.xs),
+                      const Icon(
+                        Icons.alarm,
+                        size: 16,
+                        color: AppColors.primary,
+                      ),
+                    ],
+                  ],
                 ),
                 const SizedBox(height: AppSpacing.xs),
                 Text(

@@ -42,7 +42,9 @@ class DashboardSummary {
   double get endingBalance => beginningBalance + totalMoneyIn - totalMoneyOut;
 }
 
-final _transactionDaoProvider = Provider<TransactionDao>((ref) => TransactionDao());
+final _transactionDaoProvider = Provider<TransactionDao>(
+  (ref) => TransactionDao(),
+);
 
 /// Combines the open accounting period's totals with total available funds
 /// across accounts, kept live via [DbChangeNotifier].
@@ -93,14 +95,13 @@ final dashboardSummaryProvider = StreamProvider.autoDispose<DashboardSummary>((
 /// was written by a parallel agent — this is a minimal local fallback using
 /// [TransactionDao.getFiltered] directly. Once that provider lands, this
 /// can likely be dropped in favor of it (dedup candidate).
-final recentTransactionsProvider = StreamProvider.autoDispose<List<TransactionEntry>>((
-  ref,
-) {
-  final dao = ref.watch(_transactionDaoProvider);
-  return DbChangeNotifier.instance
-      .watchAny([DbTable.transactions])
-      .asyncMap((_) async {
-    final all = await dao.getFiltered();
-    return all.take(5).toList();
-  });
-});
+final recentTransactionsProvider =
+    StreamProvider.autoDispose<List<TransactionEntry>>((ref) {
+      final dao = ref.watch(_transactionDaoProvider);
+      return DbChangeNotifier.instance
+          .watchAny([DbTable.transactions])
+          .asyncMap((_) async {
+            final all = await dao.getFiltered();
+            return all.take(5).toList();
+          });
+    });

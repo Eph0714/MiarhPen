@@ -68,6 +68,9 @@ class AppDatabase {
         if (oldVersion < 2) {
           await _createRecurringPaymentsTable(db);
         }
+        if (oldVersion < 3) {
+          await _addRecurringPaymentAlarmColumns(db);
+        }
       },
     );
   }
@@ -230,6 +233,9 @@ class AppDatabase {
         status TEXT NOT NULL DEFAULT 'UNPAID',
         is_active INTEGER NOT NULL DEFAULT 1,
         last_paid_date TEXT,
+        alarm_enabled INTEGER NOT NULL DEFAULT 0,
+        alarm_sound_uri TEXT,
+        alarm_sound_name TEXT,
         created_at TEXT NOT NULL,
         updated_at TEXT NOT NULL
       )
@@ -238,6 +244,35 @@ class AppDatabase {
       'CREATE INDEX IF NOT EXISTS idx_recurring_payments_active '
       'ON recurring_payments(is_active)',
     );
+  }
+
+  /// v3: lets a recurring payment fire a local alarm/reminder notification
+  /// using a sound the user picks from their phone's own ringtone/alarm
+  /// list (see RingtonePickerService + RecurringPaymentAlarmService). Only
+  /// reached by [onUpgrade] for installs created before v3 — fresh installs
+  /// already get these columns from [_createRecurringPaymentsTable] above.
+  /// `ALTER TABLE ... ADD COLUMN` is additive-only: existing rows keep all
+  /// their data and simply get the new columns at their DEFAULT value.
+  Future<void> _addRecurringPaymentAlarmColumns(Database db) async {
+    final columns = (await db.rawQuery(
+      'PRAGMA table_info(recurring_payments)',
+    )).map((c) => c['name'] as String).toSet();
+
+    if (!columns.contains('alarm_enabled')) {
+      await db.execute(
+        'ALTER TABLE recurring_payments ADD COLUMN alarm_enabled INTEGER NOT NULL DEFAULT 0',
+      );
+    }
+    if (!columns.contains('alarm_sound_uri')) {
+      await db.execute(
+        'ALTER TABLE recurring_payments ADD COLUMN alarm_sound_uri TEXT',
+      );
+    }
+    if (!columns.contains('alarm_sound_name')) {
+      await db.execute(
+        'ALTER TABLE recurring_payments ADD COLUMN alarm_sound_name TEXT',
+      );
+    }
   }
 
   /// Closes and clears the cached instance/in-flight open — used by

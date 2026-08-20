@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/platform/ringtone_picker_service.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/validators.dart';
+import '../../../../core/widgets/app_card.dart';
 import '../../../../core/widgets/loading_overlay.dart';
 import '../../../accounts/application/accounts_provider.dart';
 import '../../../categories/application/categories_provider.dart';
@@ -45,6 +47,12 @@ class _RecurringPaymentFormScreenState
   TimeOfDay? _endTime;
   late RecurringPaymentStatus _status;
 
+  late bool _alarmEnabled;
+  String? _alarmSoundUri;
+  String? _alarmSoundName;
+
+  final _ringtonePicker = RingtonePickerService();
+
   bool _saving = false;
 
   bool get _isEditing => widget.existing != null;
@@ -66,6 +74,9 @@ class _RecurringPaymentFormScreenState
     _startTime = existing?.startTime;
     _endTime = existing?.endTime;
     _status = existing?.status ?? RecurringPaymentStatus.unpaid;
+    _alarmEnabled = existing?.alarmEnabled ?? false;
+    _alarmSoundUri = existing?.alarmSoundUri;
+    _alarmSoundName = existing?.alarmSoundName;
   }
 
   @override
@@ -96,6 +107,17 @@ class _RecurringPaymentFormScreenState
     return time.format(context);
   }
 
+  Future<void> _pickAlarmSound() async {
+    final picked = await _ringtonePicker.pickAlarmSound(
+      existingUri: _alarmSoundUri,
+    );
+    if (picked == null) return;
+    setState(() {
+      _alarmSoundUri = picked.uri;
+      _alarmSoundName = picked.name;
+    });
+  }
+
   Future<void> _save() async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
 
@@ -120,6 +142,10 @@ class _RecurringPaymentFormScreenState
             startTime: _startTime,
             endTime: _endTime,
             status: _status,
+            alarmEnabled: _alarmEnabled,
+            alarmSoundUri: _alarmSoundUri,
+            alarmSoundName: _alarmSoundName,
+            clearAlarmSound: _alarmSoundUri == null,
           ),
         );
       } else {
@@ -132,6 +158,9 @@ class _RecurringPaymentFormScreenState
           dayOfMonth: _dayOfMonth,
           startTime: _startTime,
           endTime: _endTime,
+          alarmEnabled: _alarmEnabled,
+          alarmSoundUri: _alarmSoundUri,
+          alarmSoundName: _alarmSoundName,
         );
       }
       if (!mounted) return;
@@ -152,7 +181,7 @@ class _RecurringPaymentFormScreenState
           _isEditing ? 'Edit Recurring Payment' : 'New Recurring Payment',
         ),
         leading: IconButton(
-          icon: const Icon(Icons.close),
+          icon: const Icon(Icons.arrow_back),
           onPressed: widget.onCancel,
         ),
       ),
@@ -270,6 +299,40 @@ class _RecurringPaymentFormScreenState
                         setState(() => _expenseCategoryId = value),
                   );
                 },
+              ),
+              const SizedBox(height: AppSpacing.md),
+              AppCard(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SwitchListTile(
+                      contentPadding: EdgeInsets.zero,
+                      title: const Text('Alarm Reminder'),
+                      subtitle: const Text(
+                        'Play a sound from your phone when this payment '
+                        'is due',
+                      ),
+                      value: _alarmEnabled,
+                      onChanged: (value) =>
+                          setState(() => _alarmEnabled = value),
+                    ),
+                    if (_alarmEnabled) ...[
+                      const Divider(height: 1),
+                      const SizedBox(height: AppSpacing.sm),
+                      ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        leading: const Icon(
+                          Icons.music_note_outlined,
+                          color: AppColors.primary,
+                        ),
+                        title: Text(_alarmSoundName ?? 'Default alarm sound'),
+                        subtitle: const Text('Tap to choose a different sound'),
+                        trailing: const Icon(Icons.chevron_right),
+                        onTap: _pickAlarmSound,
+                      ),
+                    ],
+                  ],
+                ),
               ),
               const SizedBox(height: AppSpacing.md),
               if (_isEditing)

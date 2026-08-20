@@ -121,7 +121,9 @@ class _SetupWizardScreenState extends ConsumerState<SetupWizardScreen> {
     final name = _newAccountNameController.text.trim();
     final balance = double.tryParse(_newAccountBalanceController.text.trim());
     if (name.isEmpty || balance == null) return;
-    ref.read(setupWizardControllerProvider.notifier).addInitialAccount(
+    ref
+        .read(setupWizardControllerProvider.notifier)
+        .addInitialAccount(
           InitialAccountDraft(
             name: name,
             type: _newAccountType,
@@ -239,10 +241,10 @@ class _SetupWizardScreenState extends ConsumerState<SetupWizardScreen> {
                       onPressed: _finishing
                           ? null
                           : !canProceed
-                              ? null
-                              : state.step == _stepCount - 1
-                                  ? _finish
-                                  : () => _goNext(state),
+                          ? null
+                          : state.step == _stepCount - 1
+                          ? _finish
+                          : () => _goNext(state),
                       child: Text(
                         state.step == _stepCount - 1 ? 'Finish Setup' : 'Next',
                       ),
@@ -286,7 +288,10 @@ class _CredentialsStep extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text('Create your account', style: Theme.of(context).textTheme.headlineMedium),
+          Text(
+            'Create your account',
+            style: Theme.of(context).textTheme.headlineMedium,
+          ),
           const SizedBox(height: AppSpacing.xs),
           Text(
             'Set a username and password to secure MiarhPen.',
@@ -364,7 +369,10 @@ class _CurrencyStep extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text('Choose your currency', style: Theme.of(context).textTheme.headlineMedium),
+          Text(
+            'Choose your currency',
+            style: Theme.of(context).textTheme.headlineMedium,
+          ),
           const SizedBox(height: AppSpacing.xs),
           Text(
             'This will be used throughout MiarhPen.',
@@ -445,14 +453,21 @@ class _PeriodStep extends StatelessWidget {
                 },
                 child: Row(
                   children: [
-                    const Icon(Icons.calendar_today_outlined, color: AppColors.primary),
+                    const Icon(
+                      Icons.calendar_today_outlined,
+                      color: AppColors.primary,
+                    ),
                     const SizedBox(width: AppSpacing.md),
                     Text(
                       '${state.periodStartDate.year}-${state.periodStartDate.month.toString().padLeft(2, '0')}-${state.periodStartDate.day.toString().padLeft(2, '0')}',
                       style: Theme.of(context).textTheme.bodyLarge,
                     ),
                     const Spacer(),
-                    const Icon(Icons.edit_outlined, size: 18, color: AppColors.textSecondary),
+                    const Icon(
+                      Icons.edit_outlined,
+                      size: 18,
+                      color: AppColors.textSecondary,
+                    ),
                   ],
                 ),
               ),
@@ -520,7 +535,10 @@ class _AccountsStep extends ConsumerWidget {
                       ),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.delete_outline, color: AppColors.expense),
+                      icon: const Icon(
+                        Icons.delete_outline,
+                        color: AppColors.expense,
+                      ),
                       onPressed: () => ref
                           .read(setupWizardControllerProvider.notifier)
                           .removeInitialAccount(i),
@@ -554,16 +572,25 @@ class _AccountsStep extends ConsumerWidget {
                 const SizedBox(height: AppSpacing.md),
                 TextField(
                   controller: balanceController,
-                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                  decoration: const InputDecoration(labelText: 'Beginning Balance'),
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
+                  decoration: const InputDecoration(
+                    labelText: 'Beginning Balance',
+                  ),
                 ),
                 const SizedBox(height: AppSpacing.md),
                 OutlinedButton.icon(
                   onPressed: () {
-                    if (Validators.required(nameController.text, fieldName: 'Account name') != null) {
+                    if (Validators.required(
+                          nameController.text,
+                          fieldName: 'Account name',
+                        ) !=
+                        null) {
                       return;
                     }
-                    if (Validators.positiveAmount(balanceController.text) != null) {
+                    if (Validators.positiveAmount(balanceController.text) !=
+                        null) {
                       return;
                     }
                     onAdd();
@@ -594,14 +621,20 @@ class _ReviewStep extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text('Review & confirm', style: Theme.of(context).textTheme.headlineMedium),
+          Text(
+            'Review & confirm',
+            style: Theme.of(context).textTheme.headlineMedium,
+          ),
           const SizedBox(height: AppSpacing.lg),
           AppCard(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _ReviewRow(label: 'Username', value: username),
-                _ReviewRow(label: 'Currency', value: '${state.currencyCode} (${state.currencySymbol})'),
+                _ReviewRow(
+                  label: 'Currency',
+                  value: '${state.currencyCode} (${state.currencySymbol})',
+                ),
                 _ReviewRow(label: 'First Period', value: state.periodName),
                 _ReviewRow(
                   label: 'Start Date',
@@ -616,8 +649,10 @@ class _ReviewStep extends StatelessWidget {
                   ),
                 ),
                 const Divider(height: AppSpacing.lg),
-                Text('Accounts (${state.initialAccounts.length})',
-                    style: Theme.of(context).textTheme.titleMedium),
+                Text(
+                  'Accounts (${state.initialAccounts.length})',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
                 const SizedBox(height: AppSpacing.sm),
                 for (final account in state.initialAccounts)
                   Padding(

@@ -29,8 +29,7 @@ class CategoryListScreen extends ConsumerStatefulWidget {
   final void Function(dynamic category) onEditCategory;
 
   @override
-  ConsumerState<CategoryListScreen> createState() =>
-      _CategoryListScreenState();
+  ConsumerState<CategoryListScreen> createState() => _CategoryListScreenState();
 }
 
 class _CategoryListScreenState extends ConsumerState<CategoryListScreen> {
@@ -51,7 +50,9 @@ class _CategoryListScreenState extends ConsumerState<CategoryListScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.isIncome ? 'Income Categories' : 'Expense Categories'),
+        title: Text(
+          widget.isIncome ? 'Income Categories' : 'Expense Categories',
+        ),
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: widget.onAdd,
@@ -77,8 +78,12 @@ class _CategoryListScreenState extends ConsumerState<CategoryListScreen> {
           final filtered = _query.isEmpty
               ? categories
               : categories
-                  .where((c) => _nameOf(c).toLowerCase().contains(_query.toLowerCase()))
-                  .toList();
+                    .where(
+                      (c) => _nameOf(
+                        c,
+                      ).toLowerCase().contains(_query.toLowerCase()),
+                    )
+                    .toList();
 
           return Column(
             children: [
@@ -133,7 +138,8 @@ class _CategoryListScreenState extends ConsumerState<CategoryListScreen> {
     final confirmed = await showConfirmDialog(
       context,
       title: 'Disable Category',
-      message: 'Disable "${_nameOf(category)}"? It will no longer appear when '
+      message:
+          'Disable "${_nameOf(category)}"? It will no longer appear when '
           'recording new transactions.',
       confirmLabel: 'Disable',
       destructive: true,
@@ -192,7 +198,9 @@ class _CategoryTile extends StatelessWidget {
                         ),
                         decoration: BoxDecoration(
                           color: AppColors.primaryContainer,
-                          borderRadius: BorderRadius.circular(AppSpacing.chipRadius),
+                          borderRadius: BorderRadius.circular(
+                            AppSpacing.chipRadius,
+                          ),
                         ),
                         child: const Text(
                           'Default',
@@ -217,7 +225,10 @@ class _CategoryTile extends StatelessWidget {
             ),
           ),
           IconButton(
-            icon: const Icon(Icons.remove_circle_outline, color: AppColors.expense),
+            icon: const Icon(
+              Icons.remove_circle_outline,
+              color: AppColors.expense,
+            ),
             tooltip: 'Disable',
             onPressed: onDisable,
           ),

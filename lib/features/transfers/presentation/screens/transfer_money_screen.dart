@@ -24,7 +24,8 @@ class TransferMoneyScreen extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<TransferMoneyScreen> createState() => _TransferMoneyScreenState();
+  ConsumerState<TransferMoneyScreen> createState() =>
+      _TransferMoneyScreenState();
 }
 
 class _TransferMoneyScreenState extends ConsumerState<TransferMoneyScreen> {
@@ -75,7 +76,10 @@ class _TransferMoneyScreenState extends ConsumerState<TransferMoneyScreen> {
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
 
-    final validationError = Validators.differentAccounts(_fromAccountId, _toAccountId);
+    final validationError = Validators.differentAccounts(
+      _fromAccountId,
+      _toAccountId,
+    );
     setState(() => _accountsError = validationError);
     if (validationError != null) return;
 
@@ -87,7 +91,9 @@ class _TransferMoneyScreenState extends ConsumerState<TransferMoneyScreen> {
     }
 
     final amount = double.parse(_amountController.text.trim());
-    await ref.read(addTransferControllerProvider.notifier).submit(
+    await ref
+        .read(addTransferControllerProvider.notifier)
+        .submit(
           date: _date,
           fromAccountId: _fromAccountId!,
           toAccountId: _toAccountId!,
@@ -95,16 +101,18 @@ class _TransferMoneyScreenState extends ConsumerState<TransferMoneyScreen> {
           referenceNumber: _referenceController.text.trim().isEmpty
               ? null
               : _referenceController.text.trim(),
-          notes: _notesController.text.trim().isEmpty ? null : _notesController.text.trim(),
+          notes: _notesController.text.trim().isEmpty
+              ? null
+              : _notesController.text.trim(),
           editing: widget.editing,
         );
 
     final state = ref.read(addTransferControllerProvider);
     if (state.hasError) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to save: ${state.error}')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Failed to save: ${state.error}')));
       return;
     }
 
@@ -119,8 +127,13 @@ class _TransferMoneyScreenState extends ConsumerState<TransferMoneyScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.editing != null ? 'Edit Transfer' : 'Transfer Money'),
-        leading: IconButton(icon: const Icon(Icons.close), onPressed: widget.onCancel),
+        title: Text(
+          widget.editing != null ? 'Edit Transfer' : 'Transfer Money',
+        ),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: widget.onCancel,
+        ),
       ),
       body: LoadingOverlay(
         visible: isSubmitting,
@@ -134,7 +147,9 @@ class _TransferMoneyScreenState extends ConsumerState<TransferMoneyScreen> {
                 decoration: BoxDecoration(
                   color: AppColors.transfer.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(AppSpacing.buttonRadius),
-                  border: Border.all(color: AppColors.transfer.withValues(alpha: 0.4)),
+                  border: Border.all(
+                    color: AppColors.transfer.withValues(alpha: 0.4),
+                  ),
                 ),
                 child: const Row(
                   children: [
@@ -165,18 +180,28 @@ class _TransferMoneyScreenState extends ConsumerState<TransferMoneyScreen> {
               accountsAsync.when(
                 data: (accounts) {
                   final validIds = accounts.map((a) => a.id).toSet();
-                  final fromValue = validIds.contains(_fromAccountId) ? _fromAccountId : null;
+                  final fromValue = validIds.contains(_fromAccountId)
+                      ? _fromAccountId
+                      : null;
                   return DropdownButtonFormField<int>(
                     initialValue: fromValue,
-                    decoration: const InputDecoration(labelText: 'From Account'),
+                    decoration: const InputDecoration(
+                      labelText: 'From Account',
+                    ),
                     items: accounts
-                        .map((a) => DropdownMenuItem(value: a.id, child: Text(a.name)))
+                        .map(
+                          (a) => DropdownMenuItem(
+                            value: a.id,
+                            child: Text(a.name),
+                          ),
+                        )
                         .toList(),
                     onChanged: (v) => setState(() {
                       _fromAccountId = v;
                       _accountsError = null;
                     }),
-                    validator: (v) => v == null ? 'Please select a source account' : null,
+                    validator: (v) =>
+                        v == null ? 'Please select a source account' : null,
                   );
                 },
                 loading: () => const LinearProgressIndicator(),
@@ -186,18 +211,27 @@ class _TransferMoneyScreenState extends ConsumerState<TransferMoneyScreen> {
               accountsAsync.when(
                 data: (accounts) {
                   final validIds = accounts.map((a) => a.id).toSet();
-                  final toValue = validIds.contains(_toAccountId) ? _toAccountId : null;
+                  final toValue = validIds.contains(_toAccountId)
+                      ? _toAccountId
+                      : null;
                   return DropdownButtonFormField<int>(
                     initialValue: toValue,
                     decoration: const InputDecoration(labelText: 'To Account'),
                     items: accounts
-                        .map((a) => DropdownMenuItem(value: a.id, child: Text(a.name)))
+                        .map(
+                          (a) => DropdownMenuItem(
+                            value: a.id,
+                            child: Text(a.name),
+                          ),
+                        )
                         .toList(),
                     onChanged: (v) => setState(() {
                       _toAccountId = v;
                       _accountsError = null;
                     }),
-                    validator: (v) => v == null ? 'Please select a destination account' : null,
+                    validator: (v) => v == null
+                        ? 'Please select a destination account'
+                        : null,
                   );
                 },
                 loading: () => const LinearProgressIndicator(),
@@ -205,22 +239,32 @@ class _TransferMoneyScreenState extends ConsumerState<TransferMoneyScreen> {
               ),
               if (_accountsError != null) ...[
                 const SizedBox(height: AppSpacing.xs),
-                Text(_accountsError!, style: const TextStyle(color: AppColors.expense)),
+                Text(
+                  _accountsError!,
+                  style: const TextStyle(color: AppColors.expense),
+                ),
               ],
               const SizedBox(height: AppSpacing.md),
               TextFormField(
                 controller: _amountController,
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
                 decoration: const InputDecoration(
                   labelText: 'Amount',
-                  prefixIcon: Icon(Icons.payments_outlined, color: AppColors.transfer),
+                  prefixIcon: Icon(
+                    Icons.payments_outlined,
+                    color: AppColors.transfer,
+                  ),
                 ),
                 validator: Validators.positiveAmount,
               ),
               const SizedBox(height: AppSpacing.md),
               TextFormField(
                 controller: _referenceController,
-                decoration: const InputDecoration(labelText: 'Reference Number'),
+                decoration: const InputDecoration(
+                  labelText: 'Reference Number',
+                ),
               ),
               const SizedBox(height: AppSpacing.md),
               TextFormField(
@@ -230,7 +274,9 @@ class _TransferMoneyScreenState extends ConsumerState<TransferMoneyScreen> {
               ),
               const SizedBox(height: AppSpacing.xl),
               ElevatedButton(
-                style: ElevatedButton.styleFrom(backgroundColor: AppColors.transfer),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.transfer,
+                ),
                 onPressed: isSubmitting ? null : _save,
                 child: const Text('Save'),
               ),

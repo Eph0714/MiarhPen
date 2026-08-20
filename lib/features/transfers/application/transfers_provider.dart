@@ -33,15 +33,19 @@ class TransfersFilter {
 /// All transfers matching [filter], newest first.
 final transfersStreamProvider = StreamProvider.autoDispose
     .family<List<Transfer>, TransfersFilter>((ref, filter) {
-  final dao = ref.watch(transferDaoProvider);
-  return DbChangeNotifier.instance
-      .watch(DbTable.transfers)
-      .asyncMap((_) => dao.getAll(from: filter.dateFrom, to: filter.dateTo));
-});
+      final dao = ref.watch(transferDaoProvider);
+      return DbChangeNotifier.instance
+          .watch(DbTable.transfers)
+          .asyncMap(
+            (_) => dao.getAll(from: filter.dateFrom, to: filter.dateTo),
+          );
+    });
 
 /// Single transfer by id, kept live via the transfers table stream.
-final transferByIdProvider =
-    StreamProvider.autoDispose.family<Transfer?, int>((ref, id) {
+final transferByIdProvider = StreamProvider.autoDispose.family<Transfer?, int>((
+  ref,
+  id,
+) {
   final dao = ref.watch(transferDaoProvider);
   return DbChangeNotifier.instance
       .watch(DbTable.transfers)
@@ -58,8 +62,7 @@ class AddTransferController extends AsyncNotifier<void> {
   @override
   void build() {}
 
-  TransactionRepository get _repository =>
-      ref.read(transferRepositoryProvider);
+  TransactionRepository get _repository => ref.read(transferRepositoryProvider);
 
   Future<void> submit({
     required DateTime date,
@@ -73,8 +76,10 @@ class AddTransferController extends AsyncNotifier<void> {
     if (isDuplicateSubmitGuardTripped(_lastSubmitAt)) return;
     _lastSubmitAt = DateTime.now();
 
-    final validationError =
-        Validators.differentAccounts(fromAccountId, toAccountId);
+    final validationError = Validators.differentAccounts(
+      fromAccountId,
+      toAccountId,
+    );
     if (validationError != null) {
       state = AsyncError(ArgumentError(validationError), StackTrace.current);
       return;
@@ -105,12 +110,11 @@ class AddTransferController extends AsyncNotifier<void> {
 
   Future<void> delete(Transfer transfer) async {
     state = const AsyncLoading();
-    state =
-        await AsyncValue.guard(() => _repository.deleteTransfer(transfer));
+    state = await AsyncValue.guard(() => _repository.deleteTransfer(transfer));
   }
 }
 
 final addTransferControllerProvider =
     AsyncNotifierProvider<AddTransferController, void>(
-  AddTransferController.new,
-);
+      AddTransferController.new,
+    );

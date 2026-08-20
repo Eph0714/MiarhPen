@@ -27,11 +27,13 @@ import '../widgets/transaction_tile.dart';
 /// volumes.
 class TransactionHistoryScreen extends ConsumerStatefulWidget {
   final int? initialAccountId;
+  final TransactionType? initialType;
   final void Function(TransactionEntry) onTapTransaction;
 
   const TransactionHistoryScreen({
     super.key,
     this.initialAccountId,
+    this.initialType,
     required this.onTapTransaction,
   });
 
@@ -51,6 +53,7 @@ class _TransactionHistoryScreenState
     _filter = TransactionFilter.fromPreset(
       DateRangePreset.thisMonth,
       accountId: widget.initialAccountId,
+      type: widget.initialType,
     );
   }
 

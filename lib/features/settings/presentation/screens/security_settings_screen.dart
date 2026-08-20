@@ -23,7 +23,8 @@ class SecuritySettingsScreen extends ConsumerStatefulWidget {
       _SecuritySettingsScreenState();
 }
 
-class _SecuritySettingsScreenState extends ConsumerState<SecuritySettingsScreen> {
+class _SecuritySettingsScreenState
+    extends ConsumerState<SecuritySettingsScreen> {
   bool _busy = false;
   final _batteryOptimizationService = BatteryOptimizationService();
   bool? _isIgnoringBatteryOptimizations;
@@ -37,8 +38,8 @@ class _SecuritySettingsScreenState extends ConsumerState<SecuritySettingsScreen>
   }
 
   Future<void> _refreshBatteryOptimizationStatus() async {
-    final result =
-        await _batteryOptimizationService.isIgnoringBatteryOptimizations();
+    final result = await _batteryOptimizationService
+        .isIgnoringBatteryOptimizations();
     if (mounted) setState(() => _isIgnoringBatteryOptimizations = result);
   }
 
@@ -52,7 +53,9 @@ class _SecuritySettingsScreenState extends ConsumerState<SecuritySettingsScreen>
 
   void _showMessage(String message) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   Future<String?> _promptForPin(String title) {
@@ -124,11 +127,15 @@ class _SecuritySettingsScreenState extends ConsumerState<SecuritySettingsScreen>
       final biometricService = ref.read(biometricServiceProvider);
       final available = await biometricService.canCheckBiometrics();
       if (!available) {
-        _showMessage('Biometric authentication is not available on this device.');
+        _showMessage(
+          'Biometric authentication is not available on this device.',
+        );
         return;
       }
     }
-    await ref.read(authControllerProvider.notifier).setBiometricEnabled(enabled);
+    await ref
+        .read(authControllerProvider.notifier)
+        .setBiometricEnabled(enabled);
   }
 
   Future<void> _updateSessionTimeout(int minutes) async {
@@ -187,7 +194,10 @@ class _SecuritySettingsScreenState extends ConsumerState<SecuritySettingsScreen>
             ),
           ),
           const SizedBox(height: AppSpacing.lg),
-          Text('Biometric Unlock', style: Theme.of(context).textTheme.titleMedium),
+          Text(
+            'Biometric Unlock',
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
           const SizedBox(height: AppSpacing.sm),
           AppCard(
             child: SwitchListTile(
@@ -199,14 +209,19 @@ class _SecuritySettingsScreenState extends ConsumerState<SecuritySettingsScreen>
             ),
           ),
           const SizedBox(height: AppSpacing.lg),
-          Text('Session Timeout', style: Theme.of(context).textTheme.titleMedium),
+          Text(
+            'Session Timeout',
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
           const SizedBox(height: AppSpacing.sm),
           AppCard(
             child: currentUserAsync.when(
               data: (dbUser) {
-                final currentTimeout = dbUser?.sessionTimeoutMin ??
+                final currentTimeout =
+                    dbUser?.sessionTimeoutMin ??
                     AppConstants.defaultSessionTimeoutMinutes;
-                final dropdownValue = _sessionTimeoutOptions.contains(currentTimeout)
+                final dropdownValue =
+                    _sessionTimeoutOptions.contains(currentTimeout)
                     ? currentTimeout
                     : AppConstants.defaultSessionTimeoutMinutes;
                 return Row(
@@ -215,7 +230,12 @@ class _SecuritySettingsScreenState extends ConsumerState<SecuritySettingsScreen>
                     DropdownButton<int>(
                       value: dropdownValue,
                       items: _sessionTimeoutOptions
-                          .map((m) => DropdownMenuItem(value: m, child: Text('$m min')))
+                          .map(
+                            (m) => DropdownMenuItem(
+                              value: m,
+                              child: Text('$m min'),
+                            ),
+                          )
                           .toList(),
                       onChanged: (value) {
                         if (value != null) _updateSessionTimeout(value);
@@ -230,7 +250,10 @@ class _SecuritySettingsScreenState extends ConsumerState<SecuritySettingsScreen>
           ),
           if (Platform.isAndroid) ...[
             const SizedBox(height: AppSpacing.lg),
-            Text('Background Reliability', style: Theme.of(context).textTheme.titleMedium),
+            Text(
+              'Background Reliability',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
             const SizedBox(height: AppSpacing.sm),
             AppCard(
               child: Column(

@@ -7,6 +7,7 @@ import 'core/security/secure_storage_service.dart';
 import 'core/theme/app_theme.dart';
 import 'features/auth/application/auth_provider.dart';
 import 'features/categories/application/seed_default_categories.dart';
+import 'features/recurring_payments/application/reschedule_recurring_payment_alarms.dart';
 import 'features/transactions/application/backfill_transaction_periods.dart';
 
 /// Root widget: builds the go_router-based app shell, seeds default
@@ -26,9 +27,10 @@ class _MiarhPenAppState extends ConsumerState<MiarhPenApp> {
   @override
   void initState() {
     super.initState();
-    // Both idempotent — safe to fire-and-forget on every app start.
+    // All idempotent — safe to fire-and-forget on every app start.
     seedDefaultCategoriesIfNeeded();
     backfillTransactionPeriodsIfNeeded();
+    rescheduleRecurringPaymentAlarmsIfNeeded();
   }
 
   /// Asks, once ever, for exemption from battery optimization /
