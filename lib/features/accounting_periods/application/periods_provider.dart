@@ -76,6 +76,23 @@ class ClosePeriodController {
     );
     return _dao.insert(period);
   }
+
+  /// Directly sets an open period's beginning balance — e.g. to correct a
+  /// wrong figure entered when the period was opened, without having to
+  /// reverse-engineer it through an unrelated account correction (see
+  /// [AccountFormController.adjustBeginningBalance] for that other path,
+  /// which nudges this same field by a delta rather than setting it
+  /// outright). Ending Balance is derived live from this field plus
+  /// income/expense while the period stays open, so it updates
+  /// automatically — nothing else to recompute here.
+  Future<void> setBeginningBalance(
+    int periodId,
+    double newBeginningBalance,
+  ) async {
+    final period = await _dao.getById(periodId);
+    if (period == null) return;
+    await _dao.update(period.copyWith(beginningBalance: newBeginningBalance));
+  }
 }
 
 final closePeriodControllerProvider = Provider<ClosePeriodController>((ref) {

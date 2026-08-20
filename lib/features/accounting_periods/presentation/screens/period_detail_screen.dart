@@ -32,6 +32,71 @@ class PeriodDetailScreen extends ConsumerStatefulWidget {
 class _PeriodDetailScreenState extends ConsumerState<PeriodDetailScreen> {
   bool _closing = false;
 
+  Future<void> _editBeginningBalance(double currentValue) async {
+    final controller = TextEditingController(
+      text: currentValue.toStringAsFixed(2),
+    );
+    final formKey = GlobalKey<FormState>();
+
+    final newValue = await showDialog<double>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Edit Beginning Balance'),
+        content: Form(
+          key: formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'This period\'s Ending Balance is calculated live from this '
+                'figure plus Total Income and Total Expense, so it will '
+                'update immediately too.',
+                style: Theme.of(dialogContext).textTheme.bodyMedium,
+              ),
+              const SizedBox(height: AppSpacing.md),
+              TextFormField(
+                controller: controller,
+                autofocus: true,
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
+                decoration: const InputDecoration(
+                  labelText: 'New Beginning Balance',
+                ),
+                validator: (v) {
+                  final parsed = double.tryParse((v ?? '').trim());
+                  if (parsed == null) return 'Enter a valid amount';
+                  return null;
+                },
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () {
+              if (!(formKey.currentState?.validate() ?? false)) return;
+              Navigator.of(
+                dialogContext,
+              ).pop(double.parse(controller.text.trim()));
+            },
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+    if (newValue == null || newValue == currentValue) return;
+
+    await ref
+        .read(closePeriodControllerProvider)
+        .setBeginningBalance(widget.periodId, newValue);
+  }
+
   Future<void> _handleClose() async {
     final confirmed = await showConfirmDialog(
       context,
@@ -101,6 +166,10 @@ class _PeriodDetailScreenState extends ConsumerState<PeriodDetailScreen> {
                       _StatRow(
                         label: 'Beginning Balance',
                         amount: period.beginningBalance,
+                        onEdit: isOpen
+                            ? () =>
+                                  _editBeginningBalance(period.beginningBalance)
+                            : null,
                       ),
                       const Divider(height: AppSpacing.lg),
                       _StatRow(
@@ -149,6 +218,7 @@ class _StatRow extends StatelessWidget {
     required this.amount,
     this.color,
     this.emphasize = false,
+    this.onEdit,
   });
 
   final String label;
@@ -156,16 +226,35 @@ class _StatRow extends StatelessWidget {
   final Color? color;
   final bool emphasize;
 
+  /// When set, shows a small edit icon next to the label that opens an
+  /// editor for this figure.
+  final VoidCallback? onEdit;
+
   @override
   Widget build(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(
-          label,
-          style: emphasize
-              ? Theme.of(context).textTheme.titleMedium
-              : Theme.of(context).textTheme.bodyLarge,
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              label,
+              style: emphasize
+                  ? Theme.of(context).textTheme.titleMedium
+                  : Theme.of(context).textTheme.bodyLarge,
+            ),
+            if (onEdit != null) ...[
+              const SizedBox(width: AppSpacing.xs),
+              IconButton(
+                icon: const Icon(Icons.edit_outlined, size: 18),
+                visualDensity: VisualDensity.compact,
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+                onPressed: onEdit,
+              ),
+            ],
+          ],
         ),
         BalanceText(
           amount: amount,
