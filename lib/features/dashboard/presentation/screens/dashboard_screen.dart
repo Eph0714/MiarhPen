@@ -9,7 +9,6 @@ import '../../../../core/utils/date_formatter.dart';
 import '../../../../core/widgets/app_card.dart';
 import '../../../../core/widgets/balance_text.dart';
 import '../../../../core/widgets/empty_state.dart';
-import '../../../../core/widgets/update_banner.dart';
 import '../../../accounting_periods/application/periods_provider.dart';
 import '../../../accounts/application/accounts_provider.dart';
 import '../../../transactions/domain/transaction_entry.dart';
@@ -78,7 +77,6 @@ class DashboardScreen extends ConsumerWidget {
       appBar: AppBar(title: const Text(AppConstants.appName)),
       body: Column(
         children: [
-          const UpdateBanner(),
           // Pinned above the scrollable content (not inside the ListView
           // below) so Add Income / Add Expense — the two most frequent
           // actions in the app — are always reachable in one tap, with

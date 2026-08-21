@@ -7,9 +7,11 @@ import android.net.Uri
 import android.os.Build
 import android.os.PowerManager
 import android.provider.Settings
+import androidx.core.content.FileProvider
 import io.flutter.embedding.android.FlutterFragmentActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
+import java.io.File
 
 /// Handles MiarhPen's own request to be exempted from Android's battery
 /// optimization / background-process freezing (aggressive on OEM skins
@@ -26,6 +28,7 @@ import io.flutter.plugin.common.MethodChannel
 class MainActivity : FlutterFragmentActivity() {
     private val channelName = "com.emfitsolutions.miarhpen/battery_optimization"
     private val ringtoneChannelName = "com.emfitsolutions.miarhpen/ringtone_picker"
+    private val updateChannelName = "com.emfitsolutions.miarhpen/apk_installer"
     private val ringtonePickerRequestCode = 4271
 
     /// The Flutter-side `pickAlarmSound` call stays pending until
@@ -54,6 +57,20 @@ class MainActivity : FlutterFragmentActivity() {
                 "pickAlarmSound" -> {
                     val existingUri = call.argument<String>("existingUri")
                     pickAlarmSound(existingUri, result)
+                }
+                else -> result.notImplemented()
+            }
+        }
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, updateChannelName).setMethodCallHandler { call, result ->
+            when (call.method) {
+                "installApk" -> {
+                    val path = call.argument<String>("path")
+                    if (path == null) {
+                        result.error("NO_PATH", "No APK path given", null)
+                    } else {
+                        installApk(path)
+                        result.success(null)
+                    }
                 }
                 else -> result.notImplemented()
             }
@@ -95,6 +112,21 @@ class MainActivity : FlutterFragmentActivity() {
             }
         }
         startActivityForResult(intent, ringtonePickerRequestCode)
+    }
+
+    /// Hands a downloaded update APK straight to Android's package
+    /// installer — no browser, no manual download link of our own. This
+    /// still shows Android's own "Install app?" confirmation, which is
+    /// the OS's security boundary, not something an app is allowed to
+    /// skip without device-owner/root privileges.
+    private fun installApk(path: String) {
+        val file = File(path)
+        val uri = FileProvider.getUriForFile(this, "$packageName.fileprovider", file)
+        val intent = Intent(Intent.ACTION_VIEW).apply {
+            setDataAndType(uri, "application/vnd.android.package-archive")
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION
+        }
+        startActivity(intent)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {

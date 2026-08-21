@@ -1,20 +1,49 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/platform/app_updater_service.dart';
 import '../../../../core/platform/update_checker_provider.dart';
+import '../../../../core/platform/update_checker_service.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/app_card.dart';
 
 /// About screen: app identity, version, update status, and a short
 /// privacy blurb.
-class AboutScreen extends ConsumerWidget {
+class AboutScreen extends ConsumerStatefulWidget {
   const AboutScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<AboutScreen> createState() => _AboutScreenState();
+}
+
+class _AboutScreenState extends ConsumerState<AboutScreen> {
+  final _updater = AppUpdaterService();
+  bool _updating = false;
+
+  /// Silently downloads the update and hands it to Android's own package
+  /// installer — no browser, no separate download page. Android still
+  /// shows its own one-tap "Install app?" confirmation once the download
+  /// finishes; that step belongs to the OS and can't be skipped.
+  Future<void> _update(UpdateInfo info) async {
+    setState(() => _updating = true);
+    final started = await _updater.downloadAndInstall(info);
+    if (!mounted) return;
+    setState(() => _updating = false);
+    if (!started) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Could not download the update. Check your connection.',
+          ),
+        ),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final updateAsync = ref.watch(updateCheckProvider);
 
     return Scaffold(
@@ -111,11 +140,17 @@ class AboutScreen extends ConsumerWidget {
                       ),
                     ),
                     FilledButton(
-                      onPressed: () => launchUrl(
-                        Uri.parse(info.apkDownloadUrl ?? info.releaseUrl),
-                        mode: LaunchMode.externalApplication,
-                      ),
-                      child: const Text('Update'),
+                      onPressed: _updating ? null : () => _update(info),
+                      child: _updating
+                          ? const SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                          : const Text('Update'),
                     ),
                   ],
                 );

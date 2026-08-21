@@ -23,6 +23,14 @@
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <!-- Lets MiarhPen silently download a newer release APK in the
+         background and hand it straight to Android's own package
+         installer — no browser, no "tap this link to download" step of
+         our own. Android still shows its own one-tap "Install app?"
+         confirmation before actually installing; that step belongs to
+         the OS and cannot be skipped without device-owner/root
+         privileges, which this app deliberately doesn't request. -->
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
     <application
         android:label="MiarhPen"
         android:name="${applicationName}"
@@ -84,6 +92,20 @@
         </receiver>
         <receiver android:exported="false"
             android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationReceiver" />
+
+        <!-- Exposes the app's cache directory (where a downloaded update
+             APK is saved) as a content:// URI, since Android 7+ refuses
+             to hand a plain file:// path to the package installer from
+             another app's private storage. -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
     </application>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and
@@ -94,14 +116,6 @@
         <intent>
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
-        </intent>
-        <!-- url_launcher: lets Android 11+ resolve a browser for the
-             "Update available" banner/button's link to the GitHub release
-             page, without which canLaunchUrl/launchUrl can silently fail
-             package-visibility checks. -->
-        <intent>
-            <action android:name="android.intent.action.VIEW"/>
-            <data android:scheme="https"/>
         </intent>
     </queries>
 </manifest>
