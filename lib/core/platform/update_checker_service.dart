@@ -12,11 +12,17 @@ class UpdateInfo {
   final String releaseUrl;
   final String? apkDownloadUrl;
 
+  /// The release's own description — whatever was written into the
+  /// GitHub release notes for this version (e.g. "Fixes X, adds Y").
+  /// Null/empty if the release has no notes.
+  final String? releaseNotes;
+
   const UpdateInfo({
     required this.latestVersion,
     required this.currentVersion,
     required this.releaseUrl,
     this.apkDownloadUrl,
+    this.releaseNotes,
   });
 }
 
@@ -86,11 +92,14 @@ class UpdateCheckerService {
       }
     }
 
+    final notes = (body['body'] as String?)?.trim();
+
     return UpdateInfo(
       latestVersion: latestVersion,
       currentVersion: currentVersion,
       releaseUrl: htmlUrl,
       apkDownloadUrl: apkUrl,
+      releaseNotes: (notes == null || notes.isEmpty) ? null : notes,
     );
   }
 

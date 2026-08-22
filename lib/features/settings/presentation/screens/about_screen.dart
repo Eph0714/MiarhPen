@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/platform/app_updater_service.dart';
@@ -40,6 +42,25 @@ class _AboutScreenState extends ConsumerState<AboutScreen> {
         ),
       );
     }
+  }
+
+  String _linkFor(UpdateInfo info) => info.apkDownloadUrl ?? info.releaseUrl;
+
+  Future<void> _shareLink(UpdateInfo info) async {
+    await SharePlus.instance.share(
+      ShareParams(
+        text: _linkFor(info),
+        subject: '${AppConstants.appName} v${info.latestVersion}',
+      ),
+    );
+  }
+
+  Future<void> _copyLink(UpdateInfo info) async {
+    await Clipboard.setData(ClipboardData(text: _linkFor(info)));
+    if (!mounted) return;
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Link copied.')));
   }
 
   @override
@@ -150,28 +171,80 @@ class _AboutScreenState extends ConsumerState<AboutScreen> {
                     ],
                   );
                 }
-                return Row(
+                final link = _linkFor(info);
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(Icons.system_update_alt, color: AppColors.liability),
-                    const SizedBox(width: AppSpacing.sm),
-                    Expanded(
-                      child: Text(
-                        'Version ${info.latestVersion} is available '
-                        '(you have ${info.currentVersion}).',
-                      ),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.system_update_alt,
+                          color: AppColors.liability,
+                        ),
+                        const SizedBox(width: AppSpacing.sm),
+                        Expanded(
+                          child: Text(
+                            'Version ${info.latestVersion} is available '
+                            '(you have ${info.currentVersion}).',
+                          ),
+                        ),
+                        FilledButton(
+                          onPressed: _updating ? null : () => _update(info),
+                          child: _updating
+                              ? const SizedBox(
+                                  width: 16,
+                                  height: 16,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
+                                )
+                              : const Text('Update'),
+                        ),
+                      ],
                     ),
-                    FilledButton(
-                      onPressed: _updating ? null : () => _update(info),
-                      child: _updating
-                          ? const SizedBox(
-                              width: 16,
-                              height: 16,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Colors.white,
-                              ),
-                            )
-                          : const Text('Update'),
+                    if (info.releaseNotes != null) ...[
+                      const SizedBox(height: AppSpacing.sm),
+                      const Divider(height: 1),
+                      const SizedBox(height: AppSpacing.sm),
+                      Text(
+                        'What\'s new',
+                        style: Theme.of(context).textTheme.labelLarge,
+                      ),
+                      const SizedBox(height: AppSpacing.xs),
+                      Text(
+                        info.releaseNotes!,
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                    ],
+                    const SizedBox(height: AppSpacing.sm),
+                    const Divider(height: 1),
+                    const SizedBox(height: AppSpacing.sm),
+                    Text(
+                      'Download Link',
+                      style: Theme.of(context).textTheme.labelLarge,
+                    ),
+                    const SizedBox(height: AppSpacing.xs),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: SelectableText(
+                            link,
+                            style: Theme.of(context).textTheme.bodySmall
+                                ?.copyWith(color: AppColors.primary),
+                          ),
+                        ),
+                        IconButton(
+                          tooltip: 'Copy link',
+                          icon: const Icon(Icons.copy_outlined, size: 20),
+                          onPressed: () => _copyLink(info),
+                        ),
+                        IconButton(
+                          tooltip: 'Share link',
+                          icon: const Icon(Icons.share_outlined, size: 20),
+                          onPressed: () => _shareLink(info),
+                        ),
+                      ],
                     ),
                   ],
                 );
