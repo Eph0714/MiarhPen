@@ -6,11 +6,17 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/currency_formatter.dart';
 import '../../../accounts/domain/account.dart';
 
-/// One account's button on the Dashboard's "Accounts" section — a
+/// One account's button on the Dashboard's "Accounts" section — a solid,
 /// color-coded tile (see [AccountColors]) with a type icon avatar, the
-/// account's name, and its current balance, all tinted in that account's
-/// color so a row of many accounts stays visually scannable instead of
-/// reading as identical gray boxes.
+/// account's full name, and its current balance, all in white against
+/// that account's own solid color, so a row of many accounts stays
+/// visually scannable instead of reading as identical gray boxes.
+///
+/// Deliberately has no `maxLines`/`overflow` on the name or balance —
+/// every account should read in full, even a long one — so this sizes
+/// itself to its content rather than being forced into a fixed-height
+/// grid cell (see how the Dashboard lays these out with [Wrap], not a
+/// fixed-aspect-ratio `GridView`).
 class AccountButtonCard extends StatelessWidget {
   const AccountButtonCard({
     super.key,
@@ -27,69 +33,62 @@ class AccountButtonCard extends StatelessWidget {
     final color = AccountColors.forAccount(account.id, brightness);
 
     return Material(
-      color: AppColors.surface,
+      color: color,
       borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
+      elevation: 0,
       child: InkWell(
         borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
         onTap: onTap,
         child: Container(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
-            border: Border.all(color: color.withValues(alpha: 0.35), width: 1),
-            // A soft top-to-bottom wash of the account's own color, barely
-            // there at the bottom — reads as a tinted card, not a flat
-            // block of color, and keeps the balance figure legible.
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [color.withValues(alpha: 0.14), Colors.transparent],
-            ),
             boxShadow: [
               BoxShadow(
-                color: color.withValues(alpha: 0.12),
+                color: color.withValues(alpha: 0.35),
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               ),
             ],
           ),
-          padding: const EdgeInsets.all(AppSpacing.sm),
+          padding: const EdgeInsets.all(AppSpacing.md),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
               Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
                     width: 32,
                     height: 32,
                     decoration: BoxDecoration(
-                      color: color.withValues(alpha: 0.18),
+                      color: Colors.white.withValues(alpha: 0.22),
                       shape: BoxShape.circle,
                     ),
-                    child: Icon(account.type.icon, size: 17, color: color),
+                    child: Icon(
+                      account.type.icon,
+                      size: 17,
+                      color: Colors.white,
+                    ),
                   ),
-                  const SizedBox(width: AppSpacing.xs),
+                  const SizedBox(width: AppSpacing.sm),
                   Expanded(
                     child: Text(
                       account.name,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: AppColors.textPrimary,
+                        color: Colors.white,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: AppSpacing.xs),
+              const SizedBox(height: AppSpacing.sm),
               Text(
                 CurrencyFormatter.format(account.currentBalance),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  color: color,
-                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
+                  fontWeight: FontWeight.w800,
                 ),
               ),
             ],

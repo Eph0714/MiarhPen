@@ -479,6 +479,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                       context.push('/recurring-payments'),
                   onTotalAvailableFundsTap: () =>
                       context.push('/reports/account'),
+                  onCashFundsTap: () => context.go('/accounts?type=cash'),
+                  onOnlineFundsTap: () => context.go('/accounts'),
                   onAccountStatementTap: (accountId) =>
                       context.push('/accounts/$accountId/statement'),
                 ),

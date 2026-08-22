@@ -11,8 +11,8 @@ import '../../transactions/domain/transaction_entry.dart';
 class DashboardSummary {
   const DashboardSummary({
     required this.totalAvailableFunds,
-    required this.cashOnHand,
-    required this.cashInBank,
+    required this.availableFundsCash,
+    required this.availableFundsOnline,
     required this.beginningBalance,
     required this.totalMoneyIn,
     required this.totalMoneyOut,
@@ -20,19 +20,22 @@ class DashboardSummary {
     this.periodName,
   });
 
-  /// Sum of current balances across active cash/bank/e-wallet accounts
-  /// (excludes credit cards / debit cards).
+  /// Sum of current balances across every active account, of every type —
+  /// cash, bank, GCash/Maya/PayPal/other e-wallets, and debit/credit
+  /// cards alike, per explicit request: "Total Available Funds" is the
+  /// grand total of all accounts, not a cash-only subset.
   final double totalAvailableFunds;
 
-  /// Sum of current balances across active [AccountType.cash] accounts.
-  final double cashOnHand;
+  /// Sum of current balances across active [AccountType.cash] accounts —
+  /// the "Available Funds in Cash" split of [totalAvailableFunds].
+  final double availableFundsCash;
 
-  /// Sum of current balances across active [AccountType.bank] accounts.
-  /// Deliberately excludes debit cards — they mirror their linked bank
-  /// account's balance rather than holding their own (see
-  /// [AccountTypeX.countsTowardAvailableFunds]), so including them would
-  /// double-count the same money.
-  final double cashInBank;
+  /// Sum of current balances across every active *non-cash* account —
+  /// bank, GCash, Maya, PayPal, other e-wallets/online payment methods,
+  /// and debit/credit cards. The "Available Funds Online" split of
+  /// [totalAvailableFunds]; together with [availableFundsCash] the two
+  /// always add back up to the grand total.
+  final double availableFundsOnline;
 
   /// The current open accounting period's beginning balance (0 if none).
   final double beginningBalance;
@@ -75,15 +78,14 @@ final dashboardSummaryProvider = StreamProvider.autoDispose<DashboardSummary>((
   ])) {
     final openPeriod = await periodDao.getOpenPeriod();
     final accounts = await accountDao.getAll(activeOnly: true);
-    final totalAvailableFunds = accounts
-        .where((a) => a.type.countsTowardAvailableFunds)
-        .fold<double>(0, (sum, a) => sum + a.currentBalance);
-    final cashOnHand = accounts
+    final totalAvailableFunds = accounts.fold<double>(
+      0,
+      (sum, a) => sum + a.currentBalance,
+    );
+    final availableFundsCash = accounts
         .where((a) => a.type == AccountType.cash)
         .fold<double>(0, (sum, a) => sum + a.currentBalance);
-    final cashInBank = accounts
-        .where((a) => a.type == AccountType.bank)
-        .fold<double>(0, (sum, a) => sum + a.currentBalance);
+    final availableFundsOnline = totalAvailableFunds - availableFundsCash;
 
     double beginningBalance = 0;
     double totalMoneyIn = 0;
@@ -96,8 +98,8 @@ final dashboardSummaryProvider = StreamProvider.autoDispose<DashboardSummary>((
 
     yield DashboardSummary(
       totalAvailableFunds: totalAvailableFunds,
-      cashOnHand: cashOnHand,
-      cashInBank: cashInBank,
+      availableFundsCash: availableFundsCash,
+      availableFundsOnline: availableFundsOnline,
       beginningBalance: beginningBalance,
       totalMoneyIn: totalMoneyIn,
       totalMoneyOut: totalMoneyOut,

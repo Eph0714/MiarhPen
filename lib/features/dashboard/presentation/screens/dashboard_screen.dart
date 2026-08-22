@@ -38,6 +38,8 @@ class DashboardScreen extends ConsumerStatefulWidget {
     required this.onViewAccounts,
     required this.onRecurringPayments,
     required this.onTotalAvailableFundsTap,
+    required this.onCashFundsTap,
+    required this.onOnlineFundsTap,
     required this.onAccountStatementTap,
   });
 
@@ -50,8 +52,12 @@ class DashboardScreen extends ConsumerStatefulWidget {
   final VoidCallback onRecurringPayments;
 
   /// Total Available Funds opens the Account Report (the per-account
-  /// breakdown that adds up to that total).
+  /// breakdown that adds up to that total). The Cash / Online split
+  /// buttons inside that card open the Accounts list pre-filtered (Cash)
+  /// or unfiltered (Online spans several account types).
   final VoidCallback onTotalAvailableFundsTap;
+  final VoidCallback onCashFundsTap;
+  final VoidCallback onOnlineFundsTap;
 
   /// Tapping any account button in the "Accounts" section below opens
   /// that account's statement (running-balance ledger + summary).
@@ -162,31 +168,58 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                       ),
                       const SizedBox(height: AppSpacing.md),
                       AppCard(
-                        onTap: widget.onTotalAvailableFundsTap,
                         color: const Color(0xFFFFF176),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  'Total Available Funds',
-                                  style: Theme.of(context).textTheme.bodyMedium
-                                      ?.copyWith(color: Colors.black87),
-                                ),
-                                const Icon(
-                                  Icons.chevron_right,
-                                  size: 18,
-                                  color: Colors.black54,
-                                ),
-                              ],
+                            InkWell(
+                              onTap: widget.onTotalAvailableFundsTap,
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    'Total Available Funds',
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodyMedium
+                                        ?.copyWith(color: Colors.black87),
+                                  ),
+                                  const Icon(
+                                    Icons.chevron_right,
+                                    size: 18,
+                                    color: Colors.black54,
+                                  ),
+                                ],
+                              ),
                             ),
                             const SizedBox(height: AppSpacing.xs),
                             BalanceText(
                               amount: summary.totalAvailableFunds,
                               color: Colors.black87,
+                            ),
+                            const SizedBox(height: AppSpacing.md),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: _AvailableFundsSplitButton(
+                                    label: 'Available Funds in Cash',
+                                    amount: summary.availableFundsCash,
+                                    icon: Icons.payments_outlined,
+                                    onTap: widget.onCashFundsTap,
+                                  ),
+                                ),
+                                const SizedBox(width: AppSpacing.sm),
+                                Expanded(
+                                  child: _AvailableFundsSplitButton(
+                                    label: 'Available Funds Online',
+                                    amount: summary.availableFundsOnline,
+                                    icon: Icons.wifi_outlined,
+                                    onTap: widget.onOnlineFundsTap,
+                                  ),
+                                ),
+                              ],
                             ),
                           ],
                         ),
@@ -232,21 +265,31 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                               title: 'No accounts yet',
                             );
                           }
-                          return GridView.count(
-                            crossAxisCount: 2,
-                            shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
-                            mainAxisSpacing: AppSpacing.sm,
-                            crossAxisSpacing: AppSpacing.sm,
-                            childAspectRatio: 2.1,
-                            children: [
-                              for (final account in accounts)
-                                AccountButtonCard(
-                                  account: account,
-                                  onTap: () =>
-                                      widget.onAccountStatementTap(account.id!),
-                                ),
-                            ],
+                          // A self-sizing Wrap, not a fixed-aspect-ratio
+                          // GridView — account names/balances are shown in
+                          // full (no ellipsis), so each tile's height must
+                          // follow its own content instead of every tile
+                          // being forced into the same fixed box.
+                          return LayoutBuilder(
+                            builder: (context, constraints) {
+                              final tileWidth =
+                                  (constraints.maxWidth - AppSpacing.sm) / 2;
+                              return Wrap(
+                                spacing: AppSpacing.sm,
+                                runSpacing: AppSpacing.sm,
+                                children: [
+                                  for (final account in accounts)
+                                    SizedBox(
+                                      width: tileWidth,
+                                      child: AccountButtonCard(
+                                        account: account,
+                                        onTap: () => widget
+                                            .onAccountStatementTap(account.id!),
+                                      ),
+                                    ),
+                                ],
+                              );
+                            },
                           );
                         },
                       ),
@@ -295,6 +338,68 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// One of the two split buttons inside the "Total Available Funds" card —
+/// "Available Funds in Cash" and "Available Funds Online" — showing that
+/// slice's total and opening the Accounts list on tap.
+class _AvailableFundsSplitButton extends StatelessWidget {
+  const _AvailableFundsSplitButton({
+    required this.label,
+    required this.amount,
+    required this.icon,
+    required this.onTap,
+  });
+
+  final String label;
+  final double amount;
+  final IconData icon;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.black.withValues(alpha: 0.06),
+      borderRadius: BorderRadius.circular(AppSpacing.buttonRadius),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(AppSpacing.buttonRadius),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.sm),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                children: [
+                  Icon(icon, size: 15, color: Colors.black54),
+                  const SizedBox(width: AppSpacing.xs),
+                  Expanded(
+                    child: Text(
+                      label,
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodySmall?.copyWith(color: Colors.black87),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: AppSpacing.xs),
+              Text(
+                CurrencyFormatter.format(amount),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  color: Colors.black87,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
