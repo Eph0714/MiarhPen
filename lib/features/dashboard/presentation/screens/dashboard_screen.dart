@@ -6,6 +6,7 @@ import '../../../../core/constants/app_constants.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/currency_formatter.dart';
 import '../../../../core/utils/date_formatter.dart';
+import '../../../../core/utils/date_range_presets.dart';
 import '../../../../core/widgets/app_card.dart';
 import '../../../../core/widgets/balance_text.dart';
 import '../../../../core/platform/update_checker_provider.dart';
@@ -13,17 +14,20 @@ import '../../../../core/widgets/empty_state.dart';
 import '../../../../core/widgets/update_banner.dart';
 import '../../../accounting_periods/application/periods_provider.dart';
 import '../../../accounts/application/accounts_provider.dart';
+import '../../../reports/application/report_filters.dart';
+import '../../../reports/application/reports_provider.dart';
+import '../../../reports/presentation/widgets/date_filter_bar.dart';
 import '../../../transactions/domain/transaction_entry.dart';
 import '../../application/dashboard_provider.dart';
 import '../widgets/quick_actions_row.dart';
 import '../widgets/summary_card.dart';
 
-/// MiarhPen's home screen: total available funds, current-period totals,
-/// an income-vs-expense chart, quick actions (including an Accounts
-/// button showing the account count), and recent transactions. Purely
-/// routing-agnostic — all navigation is delegated to the callbacks
-/// passed in.
-class DashboardScreen extends ConsumerWidget {
+/// MiarhPen's home screen: total available funds, an income-vs-expense
+/// chart (all accounts, including credit cards, over a selectable date
+/// range), quick actions (including an Accounts button showing the
+/// account count), and recent transactions. Purely routing-agnostic —
+/// all navigation is delegated to the callbacks passed in.
+class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({
     super.key,
     required this.onAddIncome,
@@ -54,11 +58,24 @@ class DashboardScreen extends ConsumerWidget {
   final void Function(int accountId) onAccountStatementTap;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<DashboardScreen> createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends ConsumerState<DashboardScreen> {
+  ReportDateFilter _chartFilter = const ReportDateFilter(
+    preset: DateRangePreset.thisMonth,
+  );
+
+  @override
+  Widget build(BuildContext context) {
     final summaryAsync = ref.watch(dashboardSummaryProvider);
     final openPeriodAsync = ref.watch(openPeriodProvider);
     final accountsAsync = ref.watch(accountsStreamProvider(true));
     final recentTransactionsAsync = ref.watch(recentTransactionsProvider);
+    // All accounts, including credit cards — same reasoning already
+    // applied to every other report: excluding credit cards here would
+    // hide real spending/income just because it happened on a card.
+    final chartSummaryAsync = ref.watch(financialSummaryProvider(_chartFilter));
 
     return Scaffold(
       appBar: AppBar(title: const Text(AppConstants.appName)),
@@ -81,7 +98,7 @@ class DashboardScreen extends ConsumerWidget {
               children: [
                 Expanded(
                   child: ElevatedButton.icon(
-                    onPressed: onAddIncome,
+                    onPressed: widget.onAddIncome,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.income,
                       foregroundColor: Colors.white,
@@ -93,7 +110,7 @@ class DashboardScreen extends ConsumerWidget {
                 const SizedBox(width: AppSpacing.sm),
                 Expanded(
                   child: ElevatedButton.icon(
-                    onPressed: onAddExpense,
+                    onPressed: widget.onAddExpense,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.expense,
                       foregroundColor: Colors.white,
@@ -145,7 +162,7 @@ class DashboardScreen extends ConsumerWidget {
                       ),
                       const SizedBox(height: AppSpacing.md),
                       AppCard(
-                        onTap: onTotalAvailableFundsTap,
+                        onTap: widget.onTotalAvailableFundsTap,
                         color: const Color(0xFFFFF176),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -175,10 +192,26 @@ class DashboardScreen extends ConsumerWidget {
                         ),
                       ),
                       const SizedBox(height: AppSpacing.lg),
+                      Text(
+                        'Income vs Expense',
+                        style: Theme.of(context).textTheme.titleLarge,
+                      ),
+                      const SizedBox(height: AppSpacing.sm),
+                      DateFilterBar(
+                        value: _chartFilter,
+                        onChanged: (f) => setState(() => _chartFilter = f),
+                      ),
+                      const SizedBox(height: AppSpacing.sm),
                       AppCard(
-                        child: IncomeVsExpenseChart(
-                          income: summary.totalMoneyIn,
-                          expense: summary.totalMoneyOut,
+                        child: chartSummaryAsync.when(
+                          loading: () =>
+                              const Center(child: CircularProgressIndicator()),
+                          error: (err, st) =>
+                              Text('Failed to load chart: $err'),
+                          data: (chartSummary) => IncomeVsExpenseChart(
+                            income: chartSummary.totalIncome,
+                            expense: chartSummary.totalExpense,
+                          ),
                         ),
                       ),
                       const SizedBox(height: AppSpacing.lg),
@@ -213,7 +246,7 @@ class DashboardScreen extends ConsumerWidget {
                                   amount: account.currentBalance,
                                   compact: true,
                                   onTap: () =>
-                                      onAccountStatementTap(account.id!),
+                                      widget.onAccountStatementTap(account.id!),
                                 ),
                             ],
                           );
@@ -222,11 +255,11 @@ class DashboardScreen extends ConsumerWidget {
                       const SizedBox(height: AppSpacing.lg),
                       QuickActionsRow(
                         accountCount: accountsAsync.value?.length ?? 0,
-                        onViewAccounts: onViewAccounts,
-                        onTransfer: onTransfer,
-                        onViewTransactions: onViewTransactions,
-                        onReports: onReports,
-                        onRecurringPayments: onRecurringPayments,
+                        onViewAccounts: widget.onViewAccounts,
+                        onTransfer: widget.onTransfer,
+                        onViewTransactions: widget.onViewTransactions,
+                        onReports: widget.onReports,
+                        onRecurringPayments: widget.onRecurringPayments,
                       ),
                       const SizedBox(height: AppSpacing.lg),
                       Text(
