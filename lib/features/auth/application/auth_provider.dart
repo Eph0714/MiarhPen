@@ -12,32 +12,13 @@ import '../domain/user.dart';
 final userDaoProvider = Provider<UserDao>((ref) => UserDao());
 
 /// A [StreamProvider] (not a plain `FutureProvider`) so it actually
-/// notices when the `users` table changes elsewhere — e.g. logout
-/// clearing every user's "Remember Me" flag. A `FutureProvider` only ever
-/// fetches once and caches that result for the rest of the app's
-/// lifetime; the router's redirect logic reading a permanently-stale
-/// cached value was exactly why logging out appeared to silently log the
-/// user straight back in (`rememberedUserProvider` still reported the old
-/// remembered user even after the DB write that cleared it).
+/// notices when the `users` table changes elsewhere instead of caching
+/// one fetch for the rest of the app's lifetime.
 final currentUserProvider = StreamProvider<AppUser?>((ref) {
   final dao = ref.watch(userDaoProvider);
   return DbChangeNotifier.instance
       .watch(DbTable.users)
       .asyncMap((_) => dao.getFirstUser());
-});
-
-/// The one user (if any) currently flagged for "Remember Me" auto-login.
-/// Read directly by the router's redirect logic (not just by
-/// [AuthController]'s own best-effort background attempt) so a
-/// remembered session is restored deterministically on cold start,
-/// without depending on a detached microtask racing the router's first
-/// redirect evaluation. See [currentUserProvider] for why this has to be
-/// a [StreamProvider] rather than a `FutureProvider`.
-final rememberedUserProvider = StreamProvider<AppUser?>((ref) {
-  final dao = ref.watch(userDaoProvider);
-  return DbChangeNotifier.instance
-      .watch(DbTable.users)
-      .asyncMap((_) => dao.getRememberedUser());
 });
 
 /// Kept alive app-wide — session state must persist regardless of which
@@ -60,13 +41,28 @@ class AuthState {
   final AuthStatus status;
   final AppUser? user;
 
-  const AuthState._(this.status, this.user);
+  /// Whether the one-time "Remember Me" cold-start check has finished
+  /// (regardless of whether it found anyone to auto-login). The router's
+  /// redirect logic uses this — not a live re-check of the database — to
+  /// decide whether a logged-out visitor should be sent to Welcome/Login:
+  /// consulting the database again on every transition to loggedOut
+  /// (including an explicit logout) is exactly what previously made
+  /// Logout flaky — the "remembered user" read could still return stale
+  /// data for a moment right after `clearAllRememberMe()`'s write,
+  /// occasionally logging the user right back in before the redirect ever
+  /// saw the cleared flag. Restoring a remembered session is a cold-start-
+  /// only concern; a deliberate logout should never re-trigger it.
+  final bool autoLoginChecked;
 
-  const AuthState.loggedOut() : this._(AuthStatus.loggedOut, null);
+  const AuthState._(this.status, this.user, this.autoLoginChecked);
 
-  const AuthState.loggedIn(AppUser user) : this._(AuthStatus.loggedIn, user);
+  const AuthState.loggedOut({bool autoLoginChecked = false})
+    : this._(AuthStatus.loggedOut, null, autoLoginChecked);
 
-  const AuthState.locked(AppUser user) : this._(AuthStatus.locked, user);
+  const AuthState.loggedIn(AppUser user)
+    : this._(AuthStatus.loggedIn, user, true);
+
+  const AuthState.locked(AppUser user) : this._(AuthStatus.locked, user, true);
 
   bool get isLoggedOut => status == AuthStatus.loggedOut;
   bool get isLoggedIn => status == AuthStatus.loggedIn;
@@ -96,14 +92,21 @@ class AuthController extends Notifier<AuthState> {
   Future<void> _tryAutoLogin() async {
     if (!state.isLoggedOut) return; // already logged in/locked somehow
     final remembered = await ref.read(userDaoProvider).getRememberedUser();
-    if (remembered == null || !state.isLoggedOut) return;
-    applyRememberedUser(remembered);
+    if (remembered != null && state.isLoggedOut) {
+      applyRememberedUser(remembered);
+      return;
+    }
+    // No one to restore — mark the check done so the router's redirect
+    // (which was holding position on `!autoLoginChecked`) proceeds to
+    // Welcome/Login instead of waiting forever.
+    if (state.isLoggedOut) {
+      state = const AuthState.loggedOut(autoLoginChecked: true);
+    }
   }
 
   /// Restores a "Remember Me" session. Idempotent/safe to call more than
-  /// once (e.g. from both this controller's own background attempt and
-  /// the router's redirect logic, whichever notices first) — a no-op if
-  /// the app is already past the logged-out state by the time it runs.
+  /// once — a no-op if the app is already past the logged-out state by
+  /// the time it runs.
   void applyRememberedUser(AppUser user) {
     if (!state.isLoggedOut) return;
     state = AuthState.loggedIn(user);
@@ -136,6 +139,24 @@ class AuthController extends Notifier<AuthState> {
     await userDao.update(updated);
 
     state = AuthState.loggedIn(updated);
+    ref.read(sessionManagerProvider).unlock();
+    return true;
+  }
+
+  /// Logs a user in via biometrics instead of their password — offered on
+  /// the Login screen (not just the session-timeout lock screen) for any
+  /// user who has biometric login enabled, so returning after an explicit
+  /// Logout doesn't force typing the password again. [user] must already
+  /// be resolved (e.g. by username) by the caller; this only verifies
+  /// [AppUser.biometricEnabled] and runs the OS biometric prompt — it
+  /// never looks the user up itself.
+  Future<bool> loginWithBiometric(AppUser user) async {
+    if (!state.isLoggedOut || !user.biometricEnabled) return false;
+    final ok = await ref
+        .read(biometricServiceProvider)
+        .authenticate(reason: 'Log in to MiarhPen');
+    if (!ok) return false;
+    state = AuthState.loggedIn(user);
     ref.read(sessionManagerProvider).unlock();
     return true;
   }
@@ -189,7 +210,10 @@ class AuthController extends Notifier<AuthState> {
     if (user != null && user.rememberMe) {
       await ref.read(userDaoProvider).clearAllRememberMe();
     }
-    state = const AuthState.loggedOut();
+    // autoLoginChecked: true — an explicit logout must never re-trigger
+    // the cold-start "Remember Me" auto-login dance (see [AuthState]'s
+    // doc comment); the router sends this straight to Welcome/Login.
+    state = const AuthState.loggedOut(autoLoginChecked: true);
   }
 
   void lock() {

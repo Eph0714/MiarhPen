@@ -5,6 +5,7 @@ import '../../../../core/constants/app_constants.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/loading_overlay.dart';
 import '../../application/auth_provider.dart';
+import '../../domain/user.dart';
 
 /// Login screen. The router only ever sends users here once at least one
 /// account exists (see the Welcome screen and app_router's redirect
@@ -34,11 +35,79 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   bool _submitting = false;
   String? _errorText;
 
+  /// Every user (this app supports several sharing one household/team
+  /// ledger) who has biometric login turned on — loaded once so the
+  /// "Login with Biometric" button can appear immediately, the same way
+  /// it does on the session-timeout lock screen, instead of only ever
+  /// being available there.
+  List<AppUser> _biometricUsers = const [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadBiometricUsers();
+  }
+
+  Future<void> _loadBiometricUsers() async {
+    final users = await ref.read(userDaoProvider).getAll();
+    if (!mounted) return;
+    setState(() {
+      _biometricUsers = users.where((u) => u.biometricEnabled).toList();
+    });
+  }
+
   @override
   void dispose() {
     _usernameController.dispose();
     _passwordController.dispose();
     super.dispose();
+  }
+
+  /// Resolves which biometric-enabled user to log in as: whoever matches
+  /// the typed username, if it matches one of them; otherwise, if there's
+  /// only one biometric-enabled user on the device, use that one as a
+  /// shortcut; otherwise ask.
+  Future<AppUser?> _resolveBiometricUser() async {
+    final typed = _usernameController.text.trim();
+    if (typed.isNotEmpty) {
+      for (final u in _biometricUsers) {
+        if (u.username.toLowerCase() == typed.toLowerCase()) return u;
+      }
+    }
+    if (_biometricUsers.length == 1) return _biometricUsers.first;
+    if (!mounted) return null;
+    return showDialog<AppUser>(
+      context: context,
+      builder: (dialogContext) => SimpleDialog(
+        title: const Text('Login with Biometric'),
+        children: [
+          for (final u in _biometricUsers)
+            SimpleDialogOption(
+              onPressed: () => Navigator.of(dialogContext).pop(u),
+              child: Text(u.username),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _loginWithBiometric() async {
+    final user = await _resolveBiometricUser();
+    if (user == null || !mounted) return;
+    setState(() {
+      _submitting = true;
+      _errorText = null;
+    });
+    final success = await ref
+        .read(authControllerProvider.notifier)
+        .loginWithBiometric(user);
+    if (!mounted) return;
+    setState(() => _submitting = false);
+    if (success) {
+      widget.onLoginSuccess();
+    } else {
+      setState(() => _errorText = 'Biometric authentication failed');
+    }
   }
 
   Future<void> _submit() async {
@@ -157,6 +226,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         onPressed: _submitting ? null : _submit,
                         child: const Text('LOGIN'),
                       ),
+                      if (_biometricUsers.isNotEmpty) ...[
+                        const SizedBox(height: AppSpacing.sm),
+                        OutlinedButton.icon(
+                          onPressed: _submitting ? null : _loginWithBiometric,
+                          icon: const Icon(Icons.fingerprint),
+                          label: const Text('Login with Biometric'),
+                        ),
+                      ],
                       const SizedBox(height: AppSpacing.sm),
                       TextButton(
                         onPressed: _submitting ? null : widget.onSignUp,

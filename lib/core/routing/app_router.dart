@@ -89,25 +89,17 @@ final appRouterProvider = Provider<GoRouter>((ref) {
 
       final hasUser = currentUser.hasValue && currentUser.value != null;
       if (hasUser && authState.isLoggedOut) {
-        // "Remember Me": before sending a logged-out visitor to Welcome/
-        // Login, check whether a session was left remembered. Reading
-        // this directly here — rather than relying solely on
-        // AuthController's own best-effort background attempt — means
-        // the very first redirect decision on cold start already knows
-        // the answer, instead of racing a detached microtask (which
-        // could otherwise flash the login form before flipping over).
-        final remembered = ref.read(rememberedUserProvider);
-        if (!remembered.hasValue) {
+        // "Remember Me" is a cold-start-only concern, resolved entirely
+        // by AuthController's own background check (see
+        // AuthState.autoLoginChecked's doc comment) — the redirect just
+        // waits for that one-time check to finish rather than
+        // re-deriving the answer itself from a live DB read, which was
+        // the source of Logout occasionally appearing to silently log
+        // the user back in.
+        if (!authState.autoLoginChecked) {
           // Still resolving — hold position rather than momentarily
           // showing the login form only to redirect away a moment later.
           return null;
-        }
-        final rememberedUser = remembered.value;
-        if (rememberedUser != null) {
-          ref
-              .read(authControllerProvider.notifier)
-              .applyRememberedUser(rememberedUser);
-          return '/dashboard';
         }
 
         if (loggedOutRoutes.contains(location)) return null;
