@@ -43,46 +43,48 @@ class _Palette {
 }
 
 const _lightPalette = _Palette(
-  primary: Color(0xFF0F7A4F), // deep professional green
-  primaryDark: Color(0xFF0A5A3A),
-  primaryLight: Color(0xFF3FA377),
-  primaryContainer: Color(0xFFDCF3E7),
-  income: Color(0xFF12805A), // money IN
+  primary: Color(0xFF1B2A57), // deep navy blue
+  primaryDark: Color(0xFF0F1830),
+  primaryLight: Color(0xFF3D53A6),
+  primaryContainer: Color(0xFFE3E7F7),
+  income: Color(
+    0xFF12805A,
+  ), // money IN — kept a universal green, not the brand color
   expense: Color(0xFFB3261E), // money OUT
   liability: Color(0xFFB36B00), // credit card outstanding
   transfer: Color(0xFF3B6EDB), // neutral transfer blue-gray
-  background: Color(0xFFFAFCFB),
+  background: Color(0xFFF6F7FB),
   surface: Color(0xFFFFFFFF),
-  surfaceMuted: Color(0xFFF1F6F3),
-  border: Color(0xFFE1E8E4),
-  textPrimary: Color(0xFF14231C),
-  textSecondary: Color(0xFF5B6B63),
+  surfaceMuted: Color(0xFFEEF0FA),
+  border: Color(0xFFE1E4F2),
+  textPrimary: Color(0xFF161B33),
+  textSecondary: Color(0xFF5C6284),
   textOnPrimary: Color(0xFFFFFFFF),
 );
 
-// Same green identity, re-tuned for dark surfaces: brighter/more saturated
+// Same navy identity, re-tuned for dark surfaces: brighter/more saturated
 // accent colors so they stay legible at low luminance, and a near-black
 // (not pure-black) background/surface pair so cards still read as raised.
 const _darkPalette = _Palette(
-  primary: Color(0xFF34C38F),
-  primaryDark: Color(0xFF1F8F63),
-  primaryLight: Color(0xFF6FE3B3),
-  primaryContainer: Color(0xFF14402C),
+  primary: Color(0xFF5C72D9),
+  primaryDark: Color(0xFF3548A8),
+  primaryLight: Color(0xFF8797E8),
+  primaryContainer: Color(0xFF1E2A57),
   income: Color(0xFF34C38F),
   expense: Color(0xFFFF6B60),
   liability: Color(0xFFFFB65C),
   transfer: Color(0xFF7EA6FF),
-  background: Color(0xFF0E1512),
-  surface: Color(0xFF16211C),
-  surfaceMuted: Color(0xFF1D2A23),
-  border: Color(0xFF2B3A32),
-  textPrimary: Color(0xFFEAF2ED),
-  textSecondary: Color(0xFF9FB3A8),
-  textOnPrimary: Color(0xFF0A150F),
+  background: Color(0xFF0D1120),
+  surface: Color(0xFF161B33),
+  surfaceMuted: Color(0xFF1D2445),
+  border: Color(0xFF2B3357),
+  textPrimary: Color(0xFFEAECF8),
+  textSecondary: Color(0xFFA0A5C4),
+  textOnPrimary: Color(0xFF0A0E1C),
 );
 
-/// MiarhPen — professional Green + White (and Green + Near-Black in dark
-/// mode) financial app theme.
+/// MiarhPen — professional Navy Blue + White (and Navy + Near-Black in
+/// dark mode) financial app theme.
 ///
 /// Design goals: clean, modern, professional, minimal color usage,
 /// rounded cards, large readable balance figures, subtle

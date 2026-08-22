@@ -8,7 +8,6 @@ import '../../../../core/utils/currency_formatter.dart';
 import '../../../../core/utils/date_formatter.dart';
 import '../../../../core/utils/date_range_presets.dart';
 import '../../../../core/widgets/app_card.dart';
-import '../../../../core/widgets/balance_text.dart';
 import '../../../../core/platform/update_checker_provider.dart';
 import '../../../../core/widgets/empty_state.dart';
 import '../../../../core/widgets/update_banner.dart';
@@ -20,13 +19,15 @@ import '../../../reports/presentation/widgets/date_filter_bar.dart';
 import '../../../transactions/domain/transaction_entry.dart';
 import '../../application/dashboard_provider.dart';
 import '../widgets/account_button_card.dart';
+import '../widgets/dashboard_hero.dart';
 import '../widgets/quick_actions_row.dart';
 
-/// MiarhPen's home screen: total available funds, an income-vs-expense
-/// chart (all accounts, including credit cards, over a selectable date
-/// range), quick actions (including an Accounts button showing the
-/// account count), and recent transactions. Purely routing-agnostic —
-/// all navigation is delegated to the callbacks passed in.
+/// MiarhPen's home screen: a navy gradient hero (Total Available Funds,
+/// the Cash/Online split, and circular quick actions) followed by an
+/// income-vs-expense chart (all accounts, including credit cards, over a
+/// selectable date range), the Accounts grid, secondary quick actions,
+/// and recent transactions. Purely routing-agnostic — all navigation is
+/// delegated to the callbacks passed in.
 class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({
     super.key,
@@ -53,7 +54,7 @@ class DashboardScreen extends ConsumerStatefulWidget {
 
   /// Total Available Funds opens the Account Report (the per-account
   /// breakdown that adds up to that total). The Cash / Online split
-  /// buttons inside that card each open their own pure report (no search
+  /// chips inside the hero each open their own pure report (no search
   /// box) scoped to just that account group.
   final VoidCallback onTotalAvailableFundsTap;
   final VoidCallback onCashFundsTap;
@@ -84,51 +85,16 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     final chartSummaryAsync = ref.watch(financialSummaryProvider(_chartFilter));
 
     return Scaffold(
-      appBar: AppBar(title: const Text(AppConstants.appName)),
+      backgroundColor: AppColors.background,
+      appBar: AppBar(
+        title: const Text(AppConstants.appName),
+        backgroundColor: AppColors.primary,
+        foregroundColor: Colors.white,
+        elevation: 0,
+      ),
       body: Column(
         children: [
           const UpdateBanner(),
-          // Pinned above the scrollable content (not inside the ListView
-          // below) so Add Income / Add Expense — the two most frequent
-          // actions in the app — are always reachable in one tap, with
-          // zero scrolling, no matter how far down the dashboard is
-          // scrolled.
-          Padding(
-            padding: const EdgeInsets.fromLTRB(
-              AppSpacing.md,
-              AppSpacing.sm,
-              AppSpacing.md,
-              AppSpacing.sm,
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed: widget.onAddIncome,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.income,
-                      foregroundColor: Colors.white,
-                    ),
-                    icon: const Icon(Icons.add_circle_outline),
-                    label: const Text('Add Income'),
-                  ),
-                ),
-                const SizedBox(width: AppSpacing.sm),
-                Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed: widget.onAddExpense,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.expense,
-                      foregroundColor: Colors.white,
-                    ),
-                    icon: const Icon(Icons.remove_circle_outline),
-                    label: const Text('Add Expense'),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const Divider(height: 1),
           Expanded(
             child: summaryAsync.when(
               loading: () => const Center(child: CircularProgressIndicator()),
@@ -143,201 +109,171 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                     // opened, not just whatever was available at launch.
                     ref.invalidate(updateCheckProvider);
                   },
-                  child: ListView(
-                    padding: const EdgeInsets.all(AppSpacing.md),
-                    children: [
-                      openPeriodAsync.when(
-                        loading: () => const SizedBox.shrink(),
-                        error: (_, __) => const SizedBox.shrink(),
-                        data: (period) {
-                          if (period == null) {
-                            return Text(
-                              'No open accounting period — set one up in Settings.',
-                              style: Theme.of(context).textTheme.bodyMedium
-                                  ?.copyWith(color: AppColors.liability),
-                            );
-                          }
-                          final dateRange = period.endDate != null
-                              ? '${DateFormatter.short(period.startDate)} – ${DateFormatter.short(period.endDate!)}'
-                              : 'Since ${DateFormatter.short(period.startDate)}';
-                          return Text(
-                            '${period.name} · $dateRange',
-                            style: Theme.of(context).textTheme.bodyMedium,
-                          );
-                        },
+                  child: CustomScrollView(
+                    slivers: [
+                      // Full-bleed — deliberately outside the padded
+                      // content below, so the gradient panel runs edge
+                      // to edge with its own rounded bottom corners.
+                      SliverToBoxAdapter(
+                        child: DashboardHero(
+                          summary: summary,
+                          onAddIncome: widget.onAddIncome,
+                          onAddExpense: widget.onAddExpense,
+                          onTransfer: widget.onTransfer,
+                          onViewTransactions: widget.onViewTransactions,
+                          onReports: widget.onReports,
+                          onTotalAvailableFundsTap:
+                              widget.onTotalAvailableFundsTap,
+                          onCashFundsTap: widget.onCashFundsTap,
+                          onOnlineFundsTap: widget.onOnlineFundsTap,
+                        ),
                       ),
-                      const SizedBox(height: AppSpacing.md),
-                      AppCard(
-                        color: const Color(0xFF2E7D32), // green theme
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            InkWell(
-                              onTap: widget.onTotalAvailableFundsTap,
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    'Total Available Funds',
+                      SliverPadding(
+                        padding: const EdgeInsets.all(AppSpacing.md),
+                        sliver: SliverList(
+                          delegate: SliverChildListDelegate([
+                            openPeriodAsync.when(
+                              loading: () => const SizedBox.shrink(),
+                              error: (_, __) => const SizedBox.shrink(),
+                              data: (period) {
+                                if (period == null) {
+                                  return Text(
+                                    'No open accounting period — set one up in Settings.',
                                     style: Theme.of(context)
                                         .textTheme
                                         .bodyMedium
-                                        ?.copyWith(
-                                          color: Colors.white.withValues(
-                                            alpha: 0.9,
-                                          ),
-                                        ),
-                                  ),
-                                  const Icon(
-                                    Icons.chevron_right,
-                                    size: 18,
-                                    color: Colors.white70,
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(height: AppSpacing.xs),
-                            BalanceText(
-                              amount: summary.totalAvailableFunds,
-                              color: Colors.white,
+                                        ?.copyWith(color: AppColors.liability),
+                                  );
+                                }
+                                final dateRange = period.endDate != null
+                                    ? '${DateFormatter.short(period.startDate)} – ${DateFormatter.short(period.endDate!)}'
+                                    : 'Since ${DateFormatter.short(period.startDate)}';
+                                return Text(
+                                  '${period.name} · $dateRange',
+                                  style: Theme.of(context).textTheme.bodyMedium,
+                                );
+                              },
                             ),
                             const SizedBox(height: AppSpacing.md),
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: _AvailableFundsSplitButton(
-                                    label: 'Available Funds in Cash',
-                                    amount: summary.availableFundsCash,
-                                    icon: Icons.payments_outlined,
-                                    color: Colors.white.withValues(alpha: 0.16),
-                                    onTap: widget.onCashFundsTap,
-                                  ),
-                                ),
-                                const SizedBox(width: AppSpacing.sm),
-                                Expanded(
-                                  child: _AvailableFundsSplitButton(
-                                    label: 'Available Funds Online',
-                                    amount: summary.availableFundsOnline,
-                                    icon: Icons.wifi_outlined,
-                                    color: const Color(
-                                      0xFF1E5FD9,
-                                    ), // blue theme
-                                    onTap: widget.onOnlineFundsTap,
-                                  ),
-                                ),
-                              ],
+                            Text(
+                              'Income vs Expense',
+                              style: Theme.of(context).textTheme.titleLarge,
                             ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: AppSpacing.lg),
-                      Text(
-                        'Income vs Expense',
-                        style: Theme.of(context).textTheme.titleLarge,
-                      ),
-                      const SizedBox(height: AppSpacing.sm),
-                      DateFilterBar(
-                        value: _chartFilter,
-                        onChanged: (f) => setState(() => _chartFilter = f),
-                      ),
-                      const SizedBox(height: AppSpacing.sm),
-                      AppCard(
-                        child: chartSummaryAsync.when(
-                          loading: () =>
-                              const Center(child: CircularProgressIndicator()),
-                          error: (err, st) =>
-                              Text('Failed to load chart: $err'),
-                          data: (chartSummary) => IncomeVsExpenseChart(
-                            income: chartSummary.totalIncome,
-                            expense: chartSummary.totalExpense,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: AppSpacing.lg),
-                      Text(
-                        'Accounts',
-                        style: Theme.of(context).textTheme.titleLarge,
-                      ),
-                      const SizedBox(height: AppSpacing.sm),
-                      accountsAsync.when(
-                        loading: () =>
-                            const Center(child: CircularProgressIndicator()),
-                        error: (err, st) =>
-                            Text('Failed to load accounts: $err'),
-                        data: (accounts) {
-                          if (accounts.isEmpty) {
-                            return const EmptyState(
-                              icon: Icons.account_balance_wallet_outlined,
-                              title: 'No accounts yet',
-                            );
-                          }
-                          // A self-sizing Wrap, not a fixed-aspect-ratio
-                          // GridView — account names/balances are shown in
-                          // full (no ellipsis), so each tile's height must
-                          // follow its own content instead of every tile
-                          // being forced into the same fixed box.
-                          return LayoutBuilder(
-                            builder: (context, constraints) {
-                              final tileWidth =
-                                  (constraints.maxWidth - AppSpacing.sm) / 2;
-                              return Wrap(
-                                spacing: AppSpacing.sm,
-                                runSpacing: AppSpacing.sm,
-                                children: [
-                                  for (final account in accounts)
-                                    SizedBox(
-                                      width: tileWidth,
-                                      child: AccountButtonCard(
-                                        account: account,
-                                        onTap: () => widget
-                                            .onAccountStatementTap(account.id!),
-                                      ),
-                                    ),
-                                ],
-                              );
-                            },
-                          );
-                        },
-                      ),
-                      const SizedBox(height: AppSpacing.lg),
-                      QuickActionsRow(
-                        accountCount: accountsAsync.value?.length ?? 0,
-                        onViewAccounts: widget.onViewAccounts,
-                        onTransfer: widget.onTransfer,
-                        onViewTransactions: widget.onViewTransactions,
-                        onReports: widget.onReports,
-                        onRecurringPayments: widget.onRecurringPayments,
-                      ),
-                      const SizedBox(height: AppSpacing.lg),
-                      Text(
-                        'Recent Transactions',
-                        style: Theme.of(context).textTheme.titleLarge,
-                      ),
-                      const SizedBox(height: AppSpacing.sm),
-                      recentTransactionsAsync.when(
-                        loading: () =>
-                            const Center(child: CircularProgressIndicator()),
-                        error: (err, st) =>
-                            Text('Failed to load transactions: $err'),
-                        data: (transactions) {
-                          if (transactions.isEmpty) {
-                            return const EmptyState(
-                              icon: Icons.receipt_long_outlined,
-                              title: 'No transactions yet',
-                            );
-                          }
-                          return AppCard(
-                            padding: EdgeInsets.zero,
-                            child: Column(
-                              children: [
-                                for (final txn in transactions)
-                                  _RecentTransactionTile(transaction: txn),
-                              ],
+                            const SizedBox(height: AppSpacing.sm),
+                            DateFilterBar(
+                              value: _chartFilter,
+                              onChanged: (f) =>
+                                  setState(() => _chartFilter = f),
                             ),
-                          );
-                        },
+                            const SizedBox(height: AppSpacing.sm),
+                            AppCard(
+                              child: chartSummaryAsync.when(
+                                loading: () => const Center(
+                                  child: CircularProgressIndicator(),
+                                ),
+                                error: (err, st) =>
+                                    Text('Failed to load chart: $err'),
+                                data: (chartSummary) => IncomeVsExpenseChart(
+                                  income: chartSummary.totalIncome,
+                                  expense: chartSummary.totalExpense,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: AppSpacing.lg),
+                            Text(
+                              'Accounts',
+                              style: Theme.of(context).textTheme.titleLarge,
+                            ),
+                            const SizedBox(height: AppSpacing.sm),
+                            accountsAsync.when(
+                              loading: () => const Center(
+                                child: CircularProgressIndicator(),
+                              ),
+                              error: (err, st) =>
+                                  Text('Failed to load accounts: $err'),
+                              data: (accounts) {
+                                if (accounts.isEmpty) {
+                                  return const EmptyState(
+                                    icon: Icons.account_balance_wallet_outlined,
+                                    title: 'No accounts yet',
+                                  );
+                                }
+                                // A self-sizing Wrap, not a
+                                // fixed-aspect-ratio GridView — account
+                                // names/balances are shown in full (no
+                                // ellipsis), so each tile's height must
+                                // follow its own content instead of every
+                                // tile being forced into the same fixed
+                                // box.
+                                return LayoutBuilder(
+                                  builder: (context, constraints) {
+                                    final tileWidth =
+                                        (constraints.maxWidth - AppSpacing.sm) /
+                                        2;
+                                    return Wrap(
+                                      spacing: AppSpacing.sm,
+                                      runSpacing: AppSpacing.sm,
+                                      children: [
+                                        for (final account in accounts)
+                                          SizedBox(
+                                            width: tileWidth,
+                                            child: AccountButtonCard(
+                                              account: account,
+                                              onTap: () =>
+                                                  widget.onAccountStatementTap(
+                                                    account.id!,
+                                                  ),
+                                            ),
+                                          ),
+                                      ],
+                                    );
+                                  },
+                                );
+                              },
+                            ),
+                            const SizedBox(height: AppSpacing.lg),
+                            QuickActionsRow(
+                              accountCount: accountsAsync.value?.length ?? 0,
+                              onViewAccounts: widget.onViewAccounts,
+                              onTransfer: widget.onTransfer,
+                              onViewTransactions: widget.onViewTransactions,
+                              onReports: widget.onReports,
+                              onRecurringPayments: widget.onRecurringPayments,
+                            ),
+                            const SizedBox(height: AppSpacing.lg),
+                            Text(
+                              'Recent Transactions',
+                              style: Theme.of(context).textTheme.titleLarge,
+                            ),
+                            const SizedBox(height: AppSpacing.sm),
+                            recentTransactionsAsync.when(
+                              loading: () => const Center(
+                                child: CircularProgressIndicator(),
+                              ),
+                              error: (err, st) =>
+                                  Text('Failed to load transactions: $err'),
+                              data: (transactions) {
+                                if (transactions.isEmpty) {
+                                  return const EmptyState(
+                                    icon: Icons.receipt_long_outlined,
+                                    title: 'No transactions yet',
+                                  );
+                                }
+                                return AppCard(
+                                  padding: EdgeInsets.zero,
+                                  child: Column(
+                                    children: [
+                                      for (final txn in transactions)
+                                        _RecentTransactionTile(
+                                          transaction: txn,
+                                        ),
+                                    ],
+                                  ),
+                                );
+                              },
+                            ),
+                          ]),
+                        ),
                       ),
                     ],
                   ),
@@ -346,71 +282,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-/// One of the two split buttons inside the "Total Available Funds" card —
-/// "Available Funds in Cash" and "Available Funds Online" — showing that
-/// slice's total and opening its own pure report (no search box, just the
-/// relevant accounts) on tap. Each carries its own themed [color].
-class _AvailableFundsSplitButton extends StatelessWidget {
-  const _AvailableFundsSplitButton({
-    required this.label,
-    required this.amount,
-    required this.icon,
-    required this.color,
-    required this.onTap,
-  });
-
-  final String label;
-  final double amount;
-  final IconData icon;
-  final Color color;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: color,
-      borderRadius: BorderRadius.circular(AppSpacing.buttonRadius),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(AppSpacing.buttonRadius),
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.sm),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Row(
-                children: [
-                  Icon(icon, size: 15, color: Colors.white),
-                  const SizedBox(width: AppSpacing.xs),
-                  Expanded(
-                    child: Text(
-                      label,
-                      style: Theme.of(
-                        context,
-                      ).textTheme.bodySmall?.copyWith(color: Colors.white),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: AppSpacing.xs),
-              Text(
-                CurrencyFormatter.format(amount),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }
