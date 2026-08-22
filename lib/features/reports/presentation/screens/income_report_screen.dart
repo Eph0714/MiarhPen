@@ -11,6 +11,7 @@ import '../../../../core/widgets/app_card.dart';
 import '../../../../core/widgets/empty_state.dart';
 import '../../application/report_filters.dart';
 import '../../application/reports_provider.dart';
+import '../widgets/account_summary_section.dart';
 import '../widgets/date_filter_bar.dart';
 import '../widgets/report_export_button.dart';
 
@@ -110,6 +111,8 @@ class _IncomeReportScreenState extends ConsumerState<IncomeReportScreen> {
               child: Center(child: Text('Failed to load income report: $err')),
             ),
           ),
+          const SizedBox(height: AppSpacing.lg),
+          AccountSummarySection(filter: _filter),
         ],
       ),
     );

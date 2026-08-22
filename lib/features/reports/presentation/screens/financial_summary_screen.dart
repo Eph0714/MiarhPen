@@ -12,6 +12,7 @@ import '../../../../core/widgets/balance_text.dart';
 import '../../../../core/utils/date_range_presets.dart';
 import '../../application/report_filters.dart';
 import '../../application/reports_provider.dart';
+import '../widgets/account_summary_section.dart';
 import '../widgets/date_filter_bar.dart';
 import '../widgets/report_export_button.dart';
 
@@ -117,6 +118,8 @@ class _FinancialSummaryScreenState
               child: Center(child: Text('Failed to load accounts: $err')),
             ),
           ),
+          const SizedBox(height: AppSpacing.lg),
+          AccountSummarySection(filter: _filter),
         ],
       ),
     );

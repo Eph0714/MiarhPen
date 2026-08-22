@@ -10,6 +10,7 @@ import '../../../../core/widgets/empty_state.dart';
 import '../../application/report_filters.dart';
 import '../../application/reports_provider.dart';
 import '../../domain/daily_balance_row.dart';
+import '../widgets/account_summary_section.dart';
 import '../widgets/date_filter_bar.dart';
 import '../widgets/report_export_button.dart';
 
@@ -69,45 +70,44 @@ class _DailyBalanceReportScreenState
           ),
         ],
       ),
-      body: Column(
+      body: ListView(
+        padding: const EdgeInsets.all(AppSpacing.md),
         children: [
-          Padding(
-            padding: const EdgeInsets.all(AppSpacing.md),
-            child: DateFilterBar(
-              value: _filter,
-              onChanged: (f) => setState(() => _filter = f),
-            ),
+          DateFilterBar(
+            value: _filter,
+            onChanged: (f) => setState(() => _filter = f),
           ),
-          Expanded(
-            child: rowsAsync.when(
-              data: (rows) {
-                if (rows.isEmpty) {
-                  return const EmptyState(
-                    icon: Icons.calendar_today_outlined,
-                    title: 'No days in this range',
-                  );
-                }
-                return ListView.separated(
-                  padding: const EdgeInsets.fromLTRB(
-                    AppSpacing.md,
-                    0,
-                    AppSpacing.md,
-                    AppSpacing.md,
-                  ),
-                  itemCount: rows.length,
-                  separatorBuilder: (_, __) =>
-                      const SizedBox(height: AppSpacing.sm),
+          const SizedBox(height: AppSpacing.md),
+          rowsAsync.when(
+            data: (rows) {
+              if (rows.isEmpty) {
+                return const EmptyState(
+                  icon: Icons.calendar_today_outlined,
+                  title: 'No days in this range',
+                );
+              }
+              return Column(
+                children: [
                   // Most recent day first — matches every other report's
                   // ordering in this app.
-                  itemBuilder: (context, index) =>
-                      _DailyBalanceCard(row: rows[rows.length - 1 - index]),
-                );
-              },
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (err, _) =>
-                  Center(child: Text('Failed to load report: $err')),
+                  for (var i = rows.length - 1; i >= 0; i--) ...[
+                    _DailyBalanceCard(row: rows[i]),
+                    const SizedBox(height: AppSpacing.sm),
+                  ],
+                ],
+              );
+            },
+            loading: () => const Padding(
+              padding: EdgeInsets.symmetric(vertical: AppSpacing.xl),
+              child: Center(child: CircularProgressIndicator()),
+            ),
+            error: (err, _) => Padding(
+              padding: const EdgeInsets.symmetric(vertical: AppSpacing.xl),
+              child: Center(child: Text('Failed to load report: $err')),
             ),
           ),
+          const SizedBox(height: AppSpacing.md),
+          AccountSummarySection(filter: _filter),
         ],
       ),
     );

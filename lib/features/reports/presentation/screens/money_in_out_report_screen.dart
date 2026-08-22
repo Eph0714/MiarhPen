@@ -11,6 +11,7 @@ import '../../../accounts/application/accounts_provider.dart';
 import '../../../categories/application/categories_provider.dart';
 import '../../application/report_filters.dart';
 import '../../application/reports_provider.dart';
+import '../widgets/account_summary_section.dart';
 import '../widgets/date_filter_bar.dart';
 import '../widgets/report_export_button.dart';
 
@@ -185,6 +186,8 @@ class _MoneyInOutReportScreenState
               child: Center(child: Text('Failed to load report: $err')),
             ),
           ),
+          const SizedBox(height: AppSpacing.lg),
+          AccountSummarySection(filter: _filter),
         ],
       ),
     );
