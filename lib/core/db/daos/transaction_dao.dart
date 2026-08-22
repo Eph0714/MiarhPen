@@ -34,6 +34,30 @@ class TransactionDao {
     return count;
   }
 
+  /// Moves every transaction currently posted to [fromAccountId] onto
+  /// [toAccountId] instead. Only ever used to correct transactions
+  /// mistakenly posted to a debit card instead of the bank account it's
+  /// linked to (a debit card holds no balance of its own — see
+  /// `reassignDebitCardTransactionsIfNeeded`) — never touches amount,
+  /// date, description, category, or any other field, only which
+  /// account the row belongs to. Returns the number of rows moved.
+  Future<int> reassignAccountTransactions({
+    required int fromAccountId,
+    required int toAccountId,
+  }) async {
+    final db = await AppDatabase.instance.database;
+    final count = await db.update(
+      'transactions',
+      {'account_id': toAccountId},
+      where: 'account_id = ?',
+      whereArgs: [fromAccountId],
+    );
+    if (count > 0) {
+      DbChangeNotifier.instance.notify(DbTable.transactions);
+    }
+    return count;
+  }
+
   /// One-time repair for transactions recorded before a bug fix that left
   /// new entries with `accounting_period_id = NULL` — such rows were
   /// invisible to the dashboard's period-scoped Money In/Out/Net

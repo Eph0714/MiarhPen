@@ -10,6 +10,7 @@ import 'features/auth/application/auth_provider.dart';
 import 'features/categories/application/seed_default_categories.dart';
 import 'features/recurring_payments/application/reschedule_recurring_payment_alarms.dart';
 import 'features/transactions/application/backfill_transaction_periods.dart';
+import 'features/transactions/application/reassign_debit_card_transactions.dart';
 
 /// Root widget: builds the go_router-based app shell, seeds default
 /// categories on first launch, and resets the idle/session timer on any
@@ -32,6 +33,7 @@ class _MiarhPenAppState extends ConsumerState<MiarhPenApp> {
     seedDefaultCategoriesIfNeeded();
     backfillTransactionPeriodsIfNeeded();
     rescheduleRecurringPaymentAlarmsIfNeeded();
+    reassignDebitCardTransactionsIfNeeded();
   }
 
   /// Asks, once ever, for exemption from battery optimization /

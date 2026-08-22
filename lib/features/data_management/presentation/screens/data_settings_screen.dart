@@ -6,6 +6,7 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/app_card.dart';
 import '../../../../core/widgets/confirm_dialog.dart';
 import '../../../../core/widgets/loading_overlay.dart';
+import '../../../transactions/application/reassign_debit_card_transactions.dart';
 import '../../application/backup_service.dart';
 import '../../application/export_service.dart';
 import '../../application/mysql_sync_service.dart';
@@ -252,6 +253,20 @@ class _DataSettingsScreenState extends State<DataSettingsScreen> {
     });
   }
 
+  Future<void> _reassignDebitCardTransactions() async {
+    await _withBusy(() async {
+      final moved = await reassignDebitCardTransactionsIfNeeded();
+      _showMessage(
+        moved == 0
+            ? 'Nothing to fix — no transactions were posted to a debit '
+                  'card account.'
+            : 'Fixed $moved transaction${moved == 1 ? '' : 's'} — moved '
+                  'from a debit card onto its linked bank account. Cash '
+                  'in Bank should now be correct.',
+      );
+    });
+  }
+
   Future<void> _pickAndImportCsv() async {
     final result = await FilePicker.pickFiles(
       type: FileType.custom,
@@ -384,6 +399,31 @@ class _DataSettingsScreenState extends State<DataSettingsScreen> {
                       ),
                     ),
                   ],
+                ],
+              ),
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            _SectionHeader('Data Repair'),
+            AppCard(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Moves any transaction still posted to a debit card '
+                    'account onto the bank account it\'s linked to. A '
+                    'debit card holds no balance of its own, so leaving a '
+                    'transaction posted directly to one left it out of '
+                    'Cash in Bank / Total Available Funds even though it '
+                    'saved correctly. Only the account reference changes — '
+                    'amount, date, description, and category are '
+                    'untouched. Safe to run more than once.',
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+                  OutlinedButton.icon(
+                    onPressed: _busy ? null : _reassignDebitCardTransactions,
+                    icon: const Icon(Icons.build_outlined),
+                    label: const Text('Fix Debit Card Transactions'),
+                  ),
                 ],
               ),
             ),
