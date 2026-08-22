@@ -20,6 +20,7 @@ class AccountDetailScreen extends ConsumerWidget {
     this.transactionsSection,
     this.onEdit,
     this.onDisabled,
+    this.onViewStatement,
   });
 
   final int accountId;
@@ -39,6 +40,10 @@ class AccountDetailScreen extends ConsumerWidget {
   /// to the accounts list) — omitted (null) means no Disable action is
   /// shown.
   final VoidCallback? onDisabled;
+
+  /// Opens this account's statement (running-balance ledger + summary) —
+  /// omitted (null) means no "View Statement" action is shown.
+  final VoidCallback? onViewStatement;
 
   Future<void> _confirmDisable(
     BuildContext context,
@@ -171,9 +176,16 @@ class AccountDetailScreen extends ConsumerWidget {
                     _adjustBeginningBalance(context, ref, account);
                   } else if (value == 'activate') {
                     _activate(ref);
+                  } else if (value == 'view_statement') {
+                    onViewStatement?.call();
                   }
                 },
                 itemBuilder: (context) => [
+                  if (onViewStatement != null)
+                    const PopupMenuItem(
+                      value: 'view_statement',
+                      child: Text('View Statement'),
+                    ),
                   if (onEdit != null)
                     const PopupMenuItem(value: 'edit', child: Text('Edit')),
                   const PopupMenuItem(

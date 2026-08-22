@@ -41,6 +41,7 @@ class DashboardScreen extends ConsumerWidget {
     required this.onTotalAvailableFundsTap,
     required this.onCashOnHandTap,
     required this.onCashInBankTap,
+    required this.onAccountStatementTap,
   });
 
   final VoidCallback onAddIncome;
@@ -67,6 +68,10 @@ class DashboardScreen extends ConsumerWidget {
   final VoidCallback onTotalAvailableFundsTap;
   final VoidCallback onCashOnHandTap;
   final VoidCallback onCashInBankTap;
+
+  /// Tapping any account button in the "Accounts" section below opens
+  /// that account's statement (running-balance ledger + summary).
+  final void Function(int accountId) onAccountStatementTap;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -264,6 +269,48 @@ class DashboardScreen extends ConsumerWidget {
                           income: summary.totalMoneyIn,
                           expense: summary.totalMoneyOut,
                         ),
+                      ),
+                      const SizedBox(height: AppSpacing.lg),
+                      Text(
+                        'Accounts',
+                        style: Theme.of(context).textTheme.titleLarge,
+                      ),
+                      const SizedBox(height: AppSpacing.sm),
+                      accountsAsync.when(
+                        loading: () =>
+                            const Center(child: CircularProgressIndicator()),
+                        error: (err, st) =>
+                            Text('Failed to load accounts: $err'),
+                        data: (accounts) {
+                          if (accounts.isEmpty) {
+                            return const EmptyState(
+                              icon: Icons.account_balance_wallet_outlined,
+                              title: 'No accounts yet',
+                            );
+                          }
+                          return AppCard(
+                            padding: EdgeInsets.zero,
+                            child: Column(
+                              children: [
+                                for (final account in accounts)
+                                  ListTile(
+                                    leading: const Icon(
+                                      Icons.account_balance_wallet_outlined,
+                                    ),
+                                    title: Text(account.name),
+                                    trailing: BalanceText(
+                                      amount: account.currentBalance,
+                                      style: Theme.of(
+                                        context,
+                                      ).textTheme.titleMedium,
+                                    ),
+                                    onTap: () =>
+                                        onAccountStatementTap(account.id!),
+                                  ),
+                              ],
+                            ),
+                          );
+                        },
                       ),
                       const SizedBox(height: AppSpacing.lg),
                       QuickActionsRow(

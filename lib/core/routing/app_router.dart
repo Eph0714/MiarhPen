@@ -22,6 +22,7 @@ import '../../features/dashboard/presentation/screens/dashboard_screen.dart';
 import '../../features/data_management/presentation/screens/data_settings_screen.dart';
 import '../../features/onboarding/presentation/screens/setup_wizard_screen.dart';
 import '../../features/reports/presentation/screens/account_report_screen.dart';
+import '../../features/reports/presentation/screens/account_statement_screen.dart';
 import '../../features/reports/presentation/screens/expense_report_screen.dart';
 import '../../features/reports/presentation/screens/financial_summary_screen.dart';
 import '../../features/reports/presentation/screens/income_report_screen.dart';
@@ -257,6 +258,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             transactionsSection: _AccountTransactionsSection(accountId: id),
             onEdit: () => context.push('/accounts/$id/edit'),
             onDisabled: () => context.pop(),
+            onViewStatement: () => context.push('/accounts/$id/statement'),
           );
         },
       ),
@@ -414,6 +416,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) => const DailyBalanceReportScreen(),
       ),
+      GoRoute(
+        path: '/accounts/:id/statement',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => AccountStatementScreen(
+          accountId: int.parse(state.pathParameters['id']!),
+        ),
+      ),
 
       // Settings
       GoRoute(
@@ -478,6 +487,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                       context.push('/reports/account'),
                   onCashOnHandTap: () => context.go('/accounts?type=cash'),
                   onCashInBankTap: () => context.go('/accounts?type=bank'),
+                  onAccountStatementTap: (accountId) =>
+                      context.push('/accounts/$accountId/statement'),
                 ),
               ),
             ],
