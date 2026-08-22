@@ -23,65 +23,75 @@ class UpdateInfo {
 /// Checks GitHub's "latest release" API for a newer MiarhPen version than
 /// the one currently installed.
 ///
-/// Deliberately fails soft everywhere: no internet, GitHub unreachable, an
-/// unparsable tag name, a private repo returning 404 — every one of these
-/// is treated as "no update to report" (returns null) rather than an
-/// error, since an update check must never be able to break app startup
-/// or clutter the UI with a spurious failure message.
+/// Only "checked successfully and you're already on the latest version" is
+/// reported as a `null` result. A genuine failure to check (no internet,
+/// GitHub unreachable, a non-200 response, a tag that doesn't parse as a
+/// version) is thrown instead of also collapsing to `null` — those two
+/// outcomes look identical to the user otherwise ("Unable to check" and
+/// "you're up to date" would render the exact same way), which is exactly
+/// what made a real connectivity problem invisible rather than reported.
+/// This is only ever triggered by an explicit visit to the About screen —
+/// never at app startup — so letting it throw can't break anything else.
 class UpdateCheckerService {
   static const _repo = 'Eph0714/MiarhPen';
   static const _apiUrl = 'https://api.github.com/repos/$_repo/releases/latest';
 
   Future<UpdateInfo?> checkForUpdate() async {
-    try {
-      final response = await http
-          .get(
-            Uri.parse(_apiUrl),
-            // GitHub's API rejects requests with no User-Agent header.
-            headers: const {
-              'User-Agent': 'MiarhPen-UpdateChecker',
-              'Accept': 'application/vnd.github+json',
-            },
-          )
-          .timeout(const Duration(seconds: 8));
+    final response = await http
+        .get(
+          Uri.parse(_apiUrl),
+          // GitHub's API rejects requests with no User-Agent header.
+          headers: const {
+            'User-Agent': 'MiarhPen-UpdateChecker',
+            'Accept': 'application/vnd.github+json',
+          },
+        )
+        .timeout(const Duration(seconds: 10));
 
-      if (response.statusCode != 200) return null;
+    if (response.statusCode != 200) {
+      throw Exception(
+        'GitHub returned HTTP ${response.statusCode} for the latest release.',
+      );
+    }
 
-      final body = jsonDecode(response.body) as Map<String, Object?>;
-      final tagName = body['tag_name'] as String?;
-      final htmlUrl = body['html_url'] as String?;
-      if (tagName == null || htmlUrl == null) return null;
+    final body = jsonDecode(response.body) as Map<String, Object?>;
+    final tagName = body['tag_name'] as String?;
+    final htmlUrl = body['html_url'] as String?;
+    if (tagName == null || htmlUrl == null) {
+      throw Exception(
+        'GitHub\'s release response was missing expected fields.',
+      );
+    }
 
-      final latestVersion = _parseSemver(tagName);
-      if (latestVersion == null) return null;
+    final latestVersion = _parseSemver(tagName);
+    if (latestVersion == null) {
+      throw Exception('Could not parse a version number from tag "$tagName".');
+    }
 
-      final packageInfo = await PackageInfo.fromPlatform();
-      final currentVersion = packageInfo.version;
+    final packageInfo = await PackageInfo.fromPlatform();
+    final currentVersion = packageInfo.version;
 
-      if (!_isNewer(latestVersion, currentVersion)) return null;
+    if (!_isNewer(latestVersion, currentVersion)) return null;
 
-      String? apkUrl;
-      final assets = body['assets'] as List<Object?>?;
-      if (assets != null) {
-        for (final asset in assets) {
-          final map = asset as Map<String, Object?>;
-          final name = map['name'] as String? ?? '';
-          if (name.toLowerCase().endsWith('.apk')) {
-            apkUrl = map['browser_download_url'] as String?;
-            break;
-          }
+    String? apkUrl;
+    final assets = body['assets'] as List<Object?>?;
+    if (assets != null) {
+      for (final asset in assets) {
+        final map = asset as Map<String, Object?>;
+        final name = map['name'] as String? ?? '';
+        if (name.toLowerCase().endsWith('.apk')) {
+          apkUrl = map['browser_download_url'] as String?;
+          break;
         }
       }
-
-      return UpdateInfo(
-        latestVersion: latestVersion,
-        currentVersion: currentVersion,
-        releaseUrl: htmlUrl,
-        apkDownloadUrl: apkUrl,
-      );
-    } catch (_) {
-      return null;
     }
+
+    return UpdateInfo(
+      latestVersion: latestVersion,
+      currentVersion: currentVersion,
+      releaseUrl: htmlUrl,
+      apkDownloadUrl: apkUrl,
+    );
   }
 
   /// Extracts a clean `X.Y.Z` from a release tag like `v1.0.2` or

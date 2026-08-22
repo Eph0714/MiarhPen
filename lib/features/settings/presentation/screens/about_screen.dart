@@ -96,11 +96,20 @@ class _AboutScreenState extends ConsumerState<AboutScreen> {
             ),
           ),
           const SizedBox(height: AppSpacing.lg),
-          Text(
-            'Software Update',
-            style: Theme.of(context).textTheme.titleMedium,
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Software Update',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              IconButton(
+                tooltip: 'Check now',
+                icon: const Icon(Icons.refresh, size: 20),
+                onPressed: () => ref.invalidate(updateCheckProvider),
+              ),
+            ],
           ),
-          const SizedBox(height: AppSpacing.sm),
           AppCard(
             child: updateAsync.when(
               loading: () => const Row(
@@ -115,7 +124,19 @@ class _AboutScreenState extends ConsumerState<AboutScreen> {
                   Text('Checking for updates…'),
                 ],
               ),
-              error: (_, __) => const Text('Unable to check for updates.'),
+              error: (err, _) => Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(Icons.error_outline, color: AppColors.expense),
+                  const SizedBox(width: AppSpacing.sm),
+                  Expanded(
+                    child: Text(
+                      'Unable to check for updates: '
+                      '${err.toString().replaceFirst('Exception: ', '')}',
+                    ),
+                  ),
+                ],
+              ),
               data: (info) {
                 if (info == null) {
                   return Row(
