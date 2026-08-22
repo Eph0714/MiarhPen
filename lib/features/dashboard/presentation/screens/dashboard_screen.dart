@@ -168,7 +168,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                       ),
                       const SizedBox(height: AppSpacing.md),
                       AppCard(
-                        color: const Color(0xFFFFF176),
+                        color: const Color(0xFFFDD835), // medium yellow
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisSize: MainAxisSize.min,

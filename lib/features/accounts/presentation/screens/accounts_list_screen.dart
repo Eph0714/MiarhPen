@@ -51,6 +51,19 @@ class _AccountsListScreenState extends ConsumerState<AccountsListScreen> {
   }
 
   @override
+  void didUpdateWidget(covariant AccountsListScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // GoRouter can reuse this same State instance across navigations to
+    // '/accounts' with different query parameters (e.g. Dashboard's
+    // "Available Funds in Cash" then "Available Funds Online" tiles both
+    // route here) — without this, initState's one-time assignment would
+    // leave _typeFilter stuck on whichever filter was requested first.
+    if (widget.initialTypeFilter != oldWidget.initialTypeFilter) {
+      setState(() => _typeFilter = widget.initialTypeFilter);
+    }
+  }
+
+  @override
   void dispose() {
     _searchController.dispose();
     super.dispose();
