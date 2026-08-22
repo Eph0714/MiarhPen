@@ -25,6 +25,7 @@ import '../../features/reports/presentation/screens/account_report_screen.dart';
 import '../../features/reports/presentation/screens/expense_report_screen.dart';
 import '../../features/reports/presentation/screens/financial_summary_screen.dart';
 import '../../features/reports/presentation/screens/income_report_screen.dart';
+import '../../features/reports/presentation/screens/daily_balance_report_screen.dart';
 import '../../features/reports/presentation/screens/money_in_out_report_screen.dart';
 import '../../features/reports/presentation/screens/reports_home_screen.dart';
 import '../../features/recurring_payments/application/recurring_payments_provider.dart';
@@ -408,6 +409,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) => const MoneyInOutReportScreen(),
       ),
+      GoRoute(
+        path: '/reports/daily-balance',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const DailyBalanceReportScreen(),
+      ),
 
       // Settings
       GoRoute(
@@ -531,6 +537,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                   onExpenseReport: () => context.push('/reports/expense'),
                   onAccountReport: () => context.push('/reports/account'),
                   onMoneyInOut: () => context.push('/reports/money-in-out'),
+                  onDailyBalance: () => context.push('/reports/daily-balance'),
                 ),
               ),
             ],

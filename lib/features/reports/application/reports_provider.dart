@@ -6,7 +6,9 @@ import '../../../core/db/daos/account_dao.dart';
 import '../../../core/db/daos/transaction_dao.dart';
 import '../../../core/db/daos/transfer_dao.dart';
 import '../../../core/db/db_change_notifier.dart';
+import '../../../core/utils/date_formatter.dart';
 import '../../accounts/domain/account.dart';
+import '../domain/daily_balance_row.dart';
 import 'report_filters.dart';
 
 final _reportTransactionDaoProvider = Provider<TransactionDao>(
@@ -312,6 +314,66 @@ final accountReportProvider = StreamProvider.autoDispose
               );
             }
 
+            return rows;
+          });
+    });
+
+/// Daily Balance Report: one row per calendar day in the resolved range,
+/// each day's beginning balance carried forward automatically from the
+/// previous day's ending balance (see [TransactionDao.cashOpeningBalanceAsOf]
+/// / [TransactionDao.cashDailyTotals] for how — nothing is stored, so
+/// editing or deleting any transaction is reflected here the next time
+/// this recomputes, with every later day's balances following
+/// automatically since each is derived from the one before it).
+///
+/// Scoped to cash-equivalent accounts only (cash, bank, GCash, Maya,
+/// PayPal, other e-wallets/online payment methods) — credit cards are
+/// liabilities, not cash on hand, and debit cards just mirror their
+/// linked bank account, so neither belongs in a cash balance.
+final dailyBalanceReportProvider = StreamProvider.autoDispose
+    .family<List<DailyBalanceRow>, ReportDateFilter>((ref, filter) {
+      final dao = ref.watch(_reportTransactionDaoProvider);
+      final range = filter.resolve();
+
+      return DbChangeNotifier.instance
+          .watchAny([DbTable.transactions, DbTable.accounts])
+          .asyncMap((_) async {
+            final start = DateTime(
+              range.start.year,
+              range.start.month,
+              range.start.day,
+            );
+            final end = DateTime(
+              range.end.year,
+              range.end.month,
+              range.end.day,
+            );
+
+            var running = await dao.cashOpeningBalanceAsOf(start);
+            final dailyTotals = await dao.cashDailyTotals(from: start, to: end);
+
+            final rows = <DailyBalanceRow>[];
+            for (
+              var day = start;
+              !day.isAfter(end);
+              day = day.add(const Duration(days: 1))
+            ) {
+              final totals =
+                  dailyTotals[DateFormatter.iso(day)] ??
+                  (income: 0.0, expense: 0.0);
+              final beginning = running;
+              final ending = beginning + totals.income - totals.expense;
+              rows.add(
+                DailyBalanceRow(
+                  date: day,
+                  beginningBalance: beginning,
+                  totalIncome: totals.income,
+                  totalExpense: totals.expense,
+                  endingBalance: ending,
+                ),
+              );
+              running = ending;
+            }
             return rows;
           });
     });

@@ -12,6 +12,7 @@ class ReportsHomeScreen extends StatelessWidget {
     required this.onExpenseReport,
     required this.onAccountReport,
     required this.onMoneyInOut,
+    required this.onDailyBalance,
     super.key,
   });
 
@@ -20,6 +21,7 @@ class ReportsHomeScreen extends StatelessWidget {
   final VoidCallback onExpenseReport;
   final VoidCallback onAccountReport;
   final VoidCallback onMoneyInOut;
+  final VoidCallback onDailyBalance;
 
   @override
   Widget build(BuildContext context) {
@@ -53,6 +55,12 @@ class ReportsHomeScreen extends StatelessWidget {
         title: 'Money In/Out',
         subtitle: 'Full transaction and transfer ledger',
         onTap: onMoneyInOut,
+      ),
+      _ReportTile(
+        icon: Icons.calendar_view_day_outlined,
+        title: 'Daily Balance Report',
+        subtitle: 'Running beginning/ending balance, day by day',
+        onTap: onDailyBalance,
       ),
     ];
 

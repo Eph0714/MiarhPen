@@ -184,6 +184,95 @@ class TransactionDao {
     return (total as num?)?.toDouble() ?? 0;
   }
 
+  /// Account types excluded from the Daily Balance Report's cash-position
+  /// scope — matches [AccountTypeX.countsTowardAvailableFunds]: a credit
+  /// card is a liability (not cash), and a debit card just mirrors its
+  /// linked bank account's balance, so counting either here would either
+  /// misrepresent or double-count real cash-equivalent money.
+  static const _excludedAccountTypesSql = "('creditCard', 'debitCard')";
+
+  /// The total cash-equivalent balance (every account whose type counts
+  /// toward available funds — cash, bank, e-wallets, etc.) as of the very
+  /// start of [asOf]: each such account's own `beginning_balance`, plus
+  /// every income/expense transaction posted to one of them strictly
+  /// before that date. This is the Daily Balance Report's anchor point —
+  /// each day's own beginning/ending balance is then derived by walking
+  /// forward from here one day at a time, so nothing needs to be stored:
+  /// editing or deleting any transaction just changes what this (and the
+  /// day-by-day totals below) compute next time, with no separate
+  /// recalculation step required anywhere.
+  Future<double> cashOpeningBalanceAsOf(DateTime asOf) async {
+    final db = await AppDatabase.instance.database;
+    final cutoff = DateTime(asOf.year, asOf.month, asOf.day).toIso8601String();
+
+    final accountRows = await db.rawQuery(
+      'SELECT COALESCE(SUM(beginning_balance), 0) AS total FROM accounts '
+      'WHERE type NOT IN $_excludedAccountTypesSql',
+    );
+    final accountsTotal = (accountRows.first['total'] as num).toDouble();
+
+    final txnRows = await db.rawQuery(
+      'SELECT t.type AS type, SUM(t.amount) AS total '
+      'FROM transactions t '
+      'JOIN accounts a ON a.id = t.account_id '
+      'WHERE a.type NOT IN $_excludedAccountTypesSql AND t.date < ? '
+      'GROUP BY t.type',
+      [cutoff],
+    );
+    var income = 0.0;
+    var expense = 0.0;
+    for (final row in txnRows) {
+      final total = (row['total'] as num?)?.toDouble() ?? 0;
+      if (row['type'] == 'INCOME') {
+        income = total;
+      } else if (row['type'] == 'EXPENSE') {
+        expense = total;
+      }
+    }
+    return accountsTotal + income - expense;
+  }
+
+  /// Per-day income/expense totals across cash-equivalent accounts (see
+  /// [cashOpeningBalanceAsOf]) for `[from, to]` inclusive, keyed by
+  /// [DateFormatter.iso]-formatted date (`yyyy-MM-dd`) — matches SQLite's
+  /// own `date()` output, which is what this groups by.
+  Future<Map<String, ({double income, double expense})>> cashDailyTotals({
+    required DateTime from,
+    required DateTime to,
+  }) async {
+    final db = await AppDatabase.instance.database;
+    final fromIso = DateTime(from.year, from.month, from.day).toIso8601String();
+    final toIso = DateTime(
+      to.year,
+      to.month,
+      to.day,
+      23,
+      59,
+      59,
+    ).toIso8601String();
+
+    final rows = await db.rawQuery(
+      'SELECT date(t.date) AS day, t.type AS type, SUM(t.amount) AS total '
+      'FROM transactions t '
+      'JOIN accounts a ON a.id = t.account_id '
+      'WHERE a.type NOT IN $_excludedAccountTypesSql '
+      'AND t.date >= ? AND t.date <= ? '
+      'GROUP BY day, t.type',
+      [fromIso, toIso],
+    );
+
+    final result = <String, ({double income, double expense})>{};
+    for (final row in rows) {
+      final day = row['day'] as String;
+      final total = (row['total'] as num?)?.toDouble() ?? 0;
+      final existing = result[day] ?? (income: 0.0, expense: 0.0);
+      result[day] = row['type'] == 'INCOME'
+          ? (income: total, expense: existing.expense)
+          : (income: existing.income, expense: total);
+    }
+    return result;
+  }
+
   /// Returns rows of `{category_id, category_name, total}` for reports and
   /// charts, joined against income_categories or expense_categories
   /// depending on [income].
