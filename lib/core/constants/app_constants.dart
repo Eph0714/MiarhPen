@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart' show IconData, Icons;
+
 /// App-wide constants for MiarhPen.
 class AppConstants {
   AppConstants._();
@@ -58,6 +60,31 @@ extension AccountTypeX on AccountType {
         return 'Other Online Payment';
       case AccountType.custom:
         return 'Custom';
+    }
+  }
+
+  /// Icon used for this account type's avatar on the Dashboard's Accounts
+  /// buttons and elsewhere a per-type glyph is useful.
+  IconData get icon {
+    switch (this) {
+      case AccountType.cash:
+        return Icons.payments_outlined;
+      case AccountType.bank:
+        return Icons.account_balance_outlined;
+      case AccountType.debitCard:
+        return Icons.credit_card_outlined;
+      case AccountType.creditCard:
+        return Icons.credit_score_outlined;
+      case AccountType.gcash:
+      case AccountType.maya:
+      case AccountType.otherEWallet:
+        return Icons.account_balance_wallet_outlined;
+      case AccountType.paypal:
+        return Icons.language_outlined;
+      case AccountType.otherOnlinePayment:
+        return Icons.qr_code_scanner_outlined;
+      case AccountType.custom:
+        return Icons.savings_outlined;
     }
   }
 

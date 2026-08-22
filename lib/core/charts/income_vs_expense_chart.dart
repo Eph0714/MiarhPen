@@ -41,12 +41,14 @@ class IncomeVsExpenseChart extends StatelessWidget {
           children: [
             _Legend(
               color: AppColors.income,
+              icon: Icons.arrow_downward_rounded,
               label: 'Income',
               amount: incomeAbs,
               percent: incomePercent,
             ),
             _Legend(
               color: AppColors.expense,
+              icon: Icons.arrow_upward_rounded,
               label: 'Expense',
               amount: expenseAbs,
               percent: expensePercent,
@@ -54,11 +56,11 @@ class IncomeVsExpenseChart extends StatelessWidget {
             ),
           ],
         ),
-        const SizedBox(height: AppSpacing.sm),
+        const SizedBox(height: AppSpacing.md),
         ClipRRect(
           borderRadius: BorderRadius.circular(AppSpacing.chipRadius),
           child: SizedBox(
-            height: 20,
+            height: 28,
             child: total <= 0
                 ? ColoredBox(color: AppColors.border)
                 : LayoutBuilder(
@@ -70,14 +72,33 @@ class IncomeVsExpenseChart extends StatelessWidget {
                           // income is laid on top up to its own share —
                           // together they always cover exactly 100%
                           // regardless of rounding, with no gap between them.
-                          ColoredBox(
-                            color: AppColors.expense,
+                          // Both layers carry a subtle gradient (darker to
+                          // lighter along the fill direction) instead of a
+                          // flat tint, for a glossier, more modern bar.
+                          DecoratedBox(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  AppColors.expense,
+                                  AppColors.expense.withValues(alpha: 0.75),
+                                ],
+                              ),
+                            ),
                             child: const SizedBox.expand(),
                           ),
                           SizedBox(
                             width: incomeWidth,
-                            height: 20,
-                            child: ColoredBox(color: AppColors.income),
+                            height: 28,
+                            child: DecoratedBox(
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [
+                                    AppColors.income,
+                                    AppColors.income.withValues(alpha: 0.75),
+                                  ],
+                                ),
+                              ),
+                            ),
                           ),
                         ],
                       );
@@ -93,6 +114,7 @@ class IncomeVsExpenseChart extends StatelessWidget {
 class _Legend extends StatelessWidget {
   const _Legend({
     required this.color,
+    required this.icon,
     required this.label,
     required this.amount,
     required this.percent,
@@ -100,6 +122,7 @@ class _Legend extends StatelessWidget {
   });
 
   final Color color;
+  final IconData icon;
   final String label;
   final double amount;
   final int percent;
@@ -107,6 +130,16 @@ class _Legend extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final badge = Container(
+      width: 22,
+      height: 22,
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.14),
+        shape: BoxShape.circle,
+      ),
+      child: Icon(icon, size: 13, color: color),
+    );
+
     return Column(
       crossAxisAlignment: alignEnd
           ? CrossAxisAlignment.end
@@ -116,35 +149,22 @@ class _Legend extends StatelessWidget {
         Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (!alignEnd) ...[
-              Container(
-                width: 10,
-                height: 10,
-                decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-              ),
-              const SizedBox(width: AppSpacing.xs),
-            ],
+            if (!alignEnd) ...[badge, const SizedBox(width: AppSpacing.xs)],
             Text(
               '$label · $percent%',
               style: Theme.of(
                 context,
               ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
             ),
-            if (alignEnd) ...[
-              const SizedBox(width: AppSpacing.xs),
-              Container(
-                width: 10,
-                height: 10,
-                decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-              ),
-            ],
+            if (alignEnd) ...[const SizedBox(width: AppSpacing.xs), badge],
           ],
         ),
+        const SizedBox(height: AppSpacing.xs / 2),
         Text(
           CurrencyFormatter.format(amount),
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(
             color: color,
-            fontWeight: FontWeight.w700,
+            fontWeight: FontWeight.w800,
           ),
         ),
       ],

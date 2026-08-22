@@ -19,8 +19,8 @@ import '../../../reports/application/reports_provider.dart';
 import '../../../reports/presentation/widgets/date_filter_bar.dart';
 import '../../../transactions/domain/transaction_entry.dart';
 import '../../application/dashboard_provider.dart';
+import '../widgets/account_button_card.dart';
 import '../widgets/quick_actions_row.dart';
-import '../widgets/summary_card.dart';
 
 /// MiarhPen's home screen: total available funds, an income-vs-expense
 /// chart (all accounts, including credit cards, over a selectable date
@@ -241,10 +241,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                             childAspectRatio: 2.1,
                             children: [
                               for (final account in accounts)
-                                SummaryCard(
-                                  label: account.name,
-                                  amount: account.currentBalance,
-                                  compact: true,
+                                AccountButtonCard(
+                                  account: account,
                                   onTap: () =>
                                       widget.onAccountStatementTap(account.id!),
                                 ),
