@@ -21,6 +21,7 @@ import '../../features/categories/presentation/screens/category_list_screen.dart
 import '../../features/dashboard/presentation/screens/dashboard_screen.dart';
 import '../../features/data_management/presentation/screens/data_settings_screen.dart';
 import '../../features/onboarding/presentation/screens/setup_wizard_screen.dart';
+import '../../features/reports/presentation/screens/account_group_report_screen.dart';
 import '../../features/reports/presentation/screens/account_report_screen.dart';
 import '../../features/reports/presentation/screens/account_statement_screen.dart';
 import '../../features/reports/presentation/screens/expense_report_screen.dart';
@@ -423,6 +424,22 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           accountId: int.parse(state.pathParameters['id']!),
         ),
       ),
+      GoRoute(
+        path: '/reports/funds/cash',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const AccountGroupReportScreen(
+          title: 'Available Funds in Cash',
+          cashOnly: true,
+        ),
+      ),
+      GoRoute(
+        path: '/reports/funds/online',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const AccountGroupReportScreen(
+          title: 'Available Funds Online',
+          cashOnly: false,
+        ),
+      ),
 
       // Settings
       GoRoute(
@@ -479,8 +496,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                       context.push('/recurring-payments'),
                   onTotalAvailableFundsTap: () =>
                       context.push('/reports/account'),
-                  onCashFundsTap: () => context.go('/accounts?type=cash'),
-                  onOnlineFundsTap: () => context.go('/accounts'),
+                  onCashFundsTap: () => context.push('/reports/funds/cash'),
+                  onOnlineFundsTap: () => context.push('/reports/funds/online'),
                   onAccountStatementTap: (accountId) =>
                       context.push('/accounts/$accountId/statement'),
                 ),

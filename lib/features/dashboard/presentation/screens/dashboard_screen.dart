@@ -53,8 +53,8 @@ class DashboardScreen extends ConsumerStatefulWidget {
 
   /// Total Available Funds opens the Account Report (the per-account
   /// breakdown that adds up to that total). The Cash / Online split
-  /// buttons inside that card open the Accounts list pre-filtered (Cash)
-  /// or unfiltered (Online spans several account types).
+  /// buttons inside that card each open their own pure report (no search
+  /// box) scoped to just that account group.
   final VoidCallback onTotalAvailableFundsTap;
   final VoidCallback onCashFundsTap;
   final VoidCallback onOnlineFundsTap;
@@ -168,7 +168,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                       ),
                       const SizedBox(height: AppSpacing.md),
                       AppCard(
-                        color: const Color(0xFFFDD835), // medium yellow
+                        color: const Color(0xFF2E7D32), // green theme
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisSize: MainAxisSize.min,
@@ -184,12 +184,16 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                     style: Theme.of(context)
                                         .textTheme
                                         .bodyMedium
-                                        ?.copyWith(color: Colors.black87),
+                                        ?.copyWith(
+                                          color: Colors.white.withValues(
+                                            alpha: 0.9,
+                                          ),
+                                        ),
                                   ),
                                   const Icon(
                                     Icons.chevron_right,
                                     size: 18,
-                                    color: Colors.black54,
+                                    color: Colors.white70,
                                   ),
                                 ],
                               ),
@@ -197,7 +201,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                             const SizedBox(height: AppSpacing.xs),
                             BalanceText(
                               amount: summary.totalAvailableFunds,
-                              color: Colors.black87,
+                              color: Colors.white,
                             ),
                             const SizedBox(height: AppSpacing.md),
                             Row(
@@ -207,6 +211,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                     label: 'Available Funds in Cash',
                                     amount: summary.availableFundsCash,
                                     icon: Icons.payments_outlined,
+                                    color: Colors.white.withValues(alpha: 0.16),
                                     onTap: widget.onCashFundsTap,
                                   ),
                                 ),
@@ -216,6 +221,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                     label: 'Available Funds Online',
                                     amount: summary.availableFundsOnline,
                                     icon: Icons.wifi_outlined,
+                                    color: const Color(
+                                      0xFF1E5FD9,
+                                    ), // blue theme
                                     onTap: widget.onOnlineFundsTap,
                                   ),
                                 ),
@@ -345,24 +353,27 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
 
 /// One of the two split buttons inside the "Total Available Funds" card —
 /// "Available Funds in Cash" and "Available Funds Online" — showing that
-/// slice's total and opening the Accounts list on tap.
+/// slice's total and opening its own pure report (no search box, just the
+/// relevant accounts) on tap. Each carries its own themed [color].
 class _AvailableFundsSplitButton extends StatelessWidget {
   const _AvailableFundsSplitButton({
     required this.label,
     required this.amount,
     required this.icon,
+    required this.color,
     required this.onTap,
   });
 
   final String label;
   final double amount;
   final IconData icon;
+  final Color color;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: Colors.black.withValues(alpha: 0.06),
+      color: color,
       borderRadius: BorderRadius.circular(AppSpacing.buttonRadius),
       child: InkWell(
         borderRadius: BorderRadius.circular(AppSpacing.buttonRadius),
@@ -375,14 +386,14 @@ class _AvailableFundsSplitButton extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  Icon(icon, size: 15, color: Colors.black54),
+                  Icon(icon, size: 15, color: Colors.white),
                   const SizedBox(width: AppSpacing.xs),
                   Expanded(
                     child: Text(
                       label,
                       style: Theme.of(
                         context,
-                      ).textTheme.bodySmall?.copyWith(color: Colors.black87),
+                      ).textTheme.bodySmall?.copyWith(color: Colors.white),
                     ),
                   ),
                 ],
@@ -393,7 +404,7 @@ class _AvailableFundsSplitButton extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  color: Colors.black87,
+                  color: Colors.white,
                   fontWeight: FontWeight.w700,
                 ),
               ),

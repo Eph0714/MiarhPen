@@ -17,9 +17,26 @@ import '../../application/reports_provider.dart';
 /// Reuses [accountReportProvider], the same data source that report is
 /// built from, so the two always agree.
 class AccountSummarySection extends ConsumerWidget {
-  const AccountSummarySection({super.key, required this.filter});
+  const AccountSummarySection({
+    super.key,
+    required this.filter,
+    this.rowFilter,
+    this.showHeading = true,
+  });
 
   final ReportDateFilter filter;
+
+  /// When set, only rows this returns `true` for are shown — e.g. the
+  /// Dashboard's "Available Funds in Cash" / "Available Funds Online"
+  /// reports narrow this down to just their own account group. Null (the
+  /// default) shows every active account, same as the standalone
+  /// Account Report.
+  final bool Function(AccountReportRow row)? rowFilter;
+
+  /// Set false when the caller already has its own "Account Summary"-style
+  /// heading (e.g. a dedicated Cash/Online funds report screen) and this
+  /// section's own heading would just duplicate it.
+  final bool showHeading;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -28,10 +45,18 @@ class AccountSummarySection extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Account Summary', style: Theme.of(context).textTheme.titleLarge),
-        const SizedBox(height: AppSpacing.sm),
+        if (showHeading) ...[
+          Text(
+            'Account Summary',
+            style: Theme.of(context).textTheme.titleLarge,
+          ),
+          const SizedBox(height: AppSpacing.sm),
+        ],
         rowsAsync.when(
-          data: (rows) {
+          data: (allRows) {
+            final rows = rowFilter == null
+                ? allRows
+                : allRows.where(rowFilter!).toList();
             if (rows.isEmpty) {
               return const EmptyState(
                 icon: Icons.account_balance_wallet_outlined,
