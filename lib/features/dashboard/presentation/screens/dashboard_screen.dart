@@ -33,14 +33,7 @@ class DashboardScreen extends ConsumerWidget {
     required this.onReports,
     required this.onViewAccounts,
     required this.onRecurringPayments,
-    required this.onBeginningBalanceTap,
-    required this.onMoneyInTap,
-    required this.onMoneyOutTap,
-    required this.onNetMovementTap,
-    required this.onEndingBalanceTap,
     required this.onTotalAvailableFundsTap,
-    required this.onCashOnHandTap,
-    required this.onCashInBankTap,
     required this.onAccountStatementTap,
   });
 
@@ -52,22 +45,9 @@ class DashboardScreen extends ConsumerWidget {
   final VoidCallback onViewAccounts;
   final VoidCallback onRecurringPayments;
 
-  /// Tapping each summary tile jumps to where that figure is broken down
-  /// in more detail — Beginning/Ending Balance to the accounting period
-  /// that produced them, Money IN to the Income Report, Money OUT to the
-  /// Expense Report, and Net Movement to the Financial Summary report.
-  final VoidCallback onBeginningBalanceTap;
-  final VoidCallback onMoneyInTap;
-  final VoidCallback onMoneyOutTap;
-  final VoidCallback onNetMovementTap;
-  final VoidCallback onEndingBalanceTap;
-
   /// Total Available Funds opens the Account Report (the per-account
-  /// breakdown that adds up to that total). Cash On Hand / Cash in Bank
-  /// open the Accounts list pre-filtered to just that account type.
+  /// breakdown that adds up to that total).
   final VoidCallback onTotalAvailableFundsTap;
-  final VoidCallback onCashOnHandTap;
-  final VoidCallback onCashInBankTap;
 
   /// Tapping any account button in the "Accounts" section below opens
   /// that account's statement (running-balance ledger + summary).
@@ -194,75 +174,6 @@ class DashboardScreen extends ConsumerWidget {
                           ],
                         ),
                       ),
-                      const SizedBox(height: AppSpacing.sm),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: SummaryCard(
-                              label: 'Cash On Hand',
-                              amount: summary.cashOnHand,
-                              compact: true,
-                              onTap: onCashOnHandTap,
-                            ),
-                          ),
-                          const SizedBox(width: AppSpacing.sm),
-                          Expanded(
-                            child: SummaryCard(
-                              label: 'Cash in Bank',
-                              amount: summary.cashInBank,
-                              compact: true,
-                              onTap: onCashInBankTap,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: AppSpacing.md),
-                      GridView.count(
-                        crossAxisCount: 2,
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        mainAxisSpacing: AppSpacing.sm,
-                        crossAxisSpacing: AppSpacing.sm,
-                        childAspectRatio: 2.1,
-                        children: [
-                          SummaryCard(
-                            label: 'Beginning Balance',
-                            amount: summary.beginningBalance,
-                            compact: true,
-                            onTap: onBeginningBalanceTap,
-                          ),
-                          SummaryCard(
-                            label: 'Money IN',
-                            amount: summary.totalMoneyIn,
-                            color: AppColors.income,
-                            compact: true,
-                            onTap: onMoneyInTap,
-                          ),
-                          SummaryCard(
-                            label: 'Money OUT',
-                            amount: summary.totalMoneyOut,
-                            color: AppColors.expense,
-                            compact: true,
-                            onTap: onMoneyOutTap,
-                          ),
-                          SummaryCard(
-                            label: 'Net Movement',
-                            amount: summary.netMovement,
-                            color: summary.netMovement < 0
-                                ? AppColors.expense
-                                : AppColors.income,
-                            compact: true,
-                            onTap: onNetMovementTap,
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: AppSpacing.sm),
-                      SummaryCard(
-                        label: 'Ending Balance',
-                        amount: summary.endingBalance,
-                        compact: true,
-                        onTap: onEndingBalanceTap,
-                      ),
                       const SizedBox(height: AppSpacing.lg),
                       AppCard(
                         child: IncomeVsExpenseChart(
@@ -288,27 +199,23 @@ class DashboardScreen extends ConsumerWidget {
                               title: 'No accounts yet',
                             );
                           }
-                          return AppCard(
-                            padding: EdgeInsets.zero,
-                            child: Column(
-                              children: [
-                                for (final account in accounts)
-                                  ListTile(
-                                    leading: const Icon(
-                                      Icons.account_balance_wallet_outlined,
-                                    ),
-                                    title: Text(account.name),
-                                    trailing: BalanceText(
-                                      amount: account.currentBalance,
-                                      style: Theme.of(
-                                        context,
-                                      ).textTheme.titleMedium,
-                                    ),
-                                    onTap: () =>
-                                        onAccountStatementTap(account.id!),
-                                  ),
-                              ],
-                            ),
+                          return GridView.count(
+                            crossAxisCount: 2,
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            mainAxisSpacing: AppSpacing.sm,
+                            crossAxisSpacing: AppSpacing.sm,
+                            childAspectRatio: 2.1,
+                            children: [
+                              for (final account in accounts)
+                                SummaryCard(
+                                  label: account.name,
+                                  amount: account.currentBalance,
+                                  compact: true,
+                                  onTap: () =>
+                                      onAccountStatementTap(account.id!),
+                                ),
+                            ],
                           );
                         },
                       ),

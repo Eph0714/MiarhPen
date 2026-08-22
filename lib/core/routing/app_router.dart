@@ -477,16 +477,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                   onViewAccounts: () => context.go('/accounts'),
                   onRecurringPayments: () =>
                       context.push('/recurring-payments'),
-                  onBeginningBalanceTap: () => context.push('/periods'),
-                  onMoneyInTap: () => context.push('/reports/income'),
-                  onMoneyOutTap: () => context.push('/reports/expense'),
-                  onNetMovementTap: () =>
-                      context.push('/reports/financial-summary'),
-                  onEndingBalanceTap: () => context.push('/periods'),
                   onTotalAvailableFundsTap: () =>
                       context.push('/reports/account'),
-                  onCashOnHandTap: () => context.go('/accounts?type=cash'),
-                  onCashInBankTap: () => context.go('/accounts?type=bank'),
                   onAccountStatementTap: (accountId) =>
                       context.push('/accounts/$accountId/statement'),
                 ),
