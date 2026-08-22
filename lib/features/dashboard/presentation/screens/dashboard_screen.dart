@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/charts/income_vs_expense_chart.dart';
-import '../../../../core/constants/app_constants.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/currency_formatter.dart';
 import '../../../../core/utils/date_formatter.dart';
@@ -13,6 +12,7 @@ import '../../../../core/widgets/empty_state.dart';
 import '../../../../core/widgets/update_banner.dart';
 import '../../../accounting_periods/application/periods_provider.dart';
 import '../../../accounts/application/accounts_provider.dart';
+import '../../../auth/application/auth_provider.dart';
 import '../../../reports/application/report_filters.dart';
 import '../../../reports/application/reports_provider.dart';
 import '../../../reports/presentation/widgets/date_filter_bar.dart';
@@ -83,11 +83,17 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     // applied to every other report: excluding credit cards here would
     // hide real spending/income just because it happened on a card.
     final chartSummaryAsync = ref.watch(financialSummaryProvider(_chartFilter));
+    final currentUserAsync = ref.watch(currentUserProvider);
 
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text(AppConstants.appName),
+        title: Text(
+          currentUserAsync.value != null
+              ? 'Welcome, ${currentUserAsync.value!.username}!'
+              : 'Welcome!',
+          style: const TextStyle(color: Colors.white),
+        ),
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
         elevation: 0,

@@ -93,7 +93,7 @@ class DashboardHero extends StatelessWidget {
                   label: 'Cash',
                   amount: summary.availableFundsCash,
                   icon: Icons.payments_outlined,
-                  color: const Color(0xFF34C38F),
+                  color: const Color(0xFF2A4FBF), // navy blue, not green
                   onTap: onCashFundsTap,
                 ),
               ),

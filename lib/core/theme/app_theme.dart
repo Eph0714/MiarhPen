@@ -47,9 +47,7 @@ const _lightPalette = _Palette(
   primaryDark: Color(0xFF0F1830),
   primaryLight: Color(0xFF3D53A6),
   primaryContainer: Color(0xFFE3E7F7),
-  income: Color(
-    0xFF12805A,
-  ), // money IN — kept a universal green, not the brand color
+  income: Color(0xFF2A4FBF), // money IN — navy blue, not green
   expense: Color(0xFFB3261E), // money OUT
   liability: Color(0xFFB36B00), // credit card outstanding
   transfer: Color(0xFF3B6EDB), // neutral transfer blue-gray
@@ -70,7 +68,7 @@ const _darkPalette = _Palette(
   primaryDark: Color(0xFF3548A8),
   primaryLight: Color(0xFF8797E8),
   primaryContainer: Color(0xFF1E2A57),
-  income: Color(0xFF34C38F),
+  income: Color(0xFF6C8CFF), // money IN — navy blue, not green
   expense: Color(0xFFFF6B60),
   liability: Color(0xFFFFB65C),
   transfer: Color(0xFF7EA6FF),

@@ -4,8 +4,9 @@ import '../theme/app_theme.dart';
 import '../utils/currency_formatter.dart';
 
 /// Large, readable balance figure used on dashboard/account-detail headers.
-/// Color reflects sign: green for positive/neutral, red for negative
-/// (e.g. an over-drawn account), unless [color] is explicitly given.
+/// Color reflects sign: the normal text color for positive/neutral, red
+/// for negative (e.g. an over-drawn account), unless [color] is
+/// explicitly given.
 class BalanceText extends StatelessWidget {
   final double amount;
   final String currencySymbol;
