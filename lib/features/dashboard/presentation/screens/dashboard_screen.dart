@@ -154,6 +154,7 @@ class DashboardScreen extends ConsumerWidget {
                       const SizedBox(height: AppSpacing.md),
                       AppCard(
                         onTap: onTotalAvailableFundsTap,
+                        color: const Color(0xFFFFF176),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisSize: MainAxisSize.min,
@@ -163,17 +164,21 @@ class DashboardScreen extends ConsumerWidget {
                               children: [
                                 Text(
                                   'Total Available Funds',
-                                  style: Theme.of(context).textTheme.bodyMedium,
+                                  style: Theme.of(context).textTheme.bodyMedium
+                                      ?.copyWith(color: Colors.black87),
                                 ),
-                                Icon(
+                                const Icon(
                                   Icons.chevron_right,
                                   size: 18,
-                                  color: AppColors.textSecondary,
+                                  color: Colors.black54,
                                 ),
                               ],
                             ),
                             const SizedBox(height: AppSpacing.xs),
-                            BalanceText(amount: summary.totalAvailableFunds),
+                            BalanceText(
+                              amount: summary.totalAvailableFunds,
+                              color: Colors.black87,
+                            ),
                           ],
                         ),
                       ),
