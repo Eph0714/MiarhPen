@@ -11,7 +11,7 @@ import '../utils/currency_formatter.dart';
 /// `IncomeVsExpenseChart(income: x, expense: y)`.
 ///
 /// Deliberately uses its own color pair — [AppColors.income] (navy blue)
-/// for Income, and a dedicated [_expenseColor] (yellow) for Expense —
+/// for Income, and a dedicated [_expenseColor] (grey) for Expense —
 /// rather than [AppColors.expense] (red), per an explicit design request
 /// for this specific chart. Every other expense indicator in the app
 /// (transaction rows, the Expense Report, etc.) keeps the universal red.
@@ -25,7 +25,7 @@ class IncomeVsExpenseChart extends StatelessWidget {
   final double income;
   final double expense;
 
-  static const _expenseColor = Color(0xFFFDBB2D);
+  static const _expenseColor = Color(0xFF78808C);
 
   @override
   Widget build(BuildContext context) {
