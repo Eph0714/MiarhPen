@@ -57,7 +57,18 @@ class MySqlSyncService {
       db: config.database,
     );
 
-    final conn = await MySqlConnection.connect(settings);
+    // Without a timeout, an unreachable host (wrong IP, server not
+    // running, phone and PC not actually on the same network) leaves the
+    // "Sync to MySQL" button spinning forever instead of ever surfacing
+    // an error — the socket connect just never resolves either way.
+    final conn = await MySqlConnection.connect(settings).timeout(
+      const Duration(seconds: 12),
+      onTimeout: () => throw Exception(
+        'Could not reach ${config.host}:${config.port} within 12s. Check '
+        'that the MySQL server is running, the address/port are correct, '
+        'and the phone and server are on the same network.',
+      ),
+    );
     try {
       await conn.query('SET FOREIGN_KEY_CHECKS = 0');
       await conn.transaction((txn) async {

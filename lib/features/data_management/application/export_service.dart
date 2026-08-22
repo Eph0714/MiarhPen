@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:csv/csv.dart';
 import 'package:excel/excel.dart';
@@ -155,10 +156,14 @@ class ExportService {
     return path;
   }
 
-  /// Generic reusable PDF report builder: a MiarhPen-titled header with a
-  /// generated-date stamp, and a table of [tableHeaders]/[tableRows].
-  /// Saved under `exports/`. Returns the path.
-  Future<String> exportReportPdf({
+  /// Builds the same MiarhPen-titled PDF used by [exportReportPdf] — a
+  /// header with a generated-date stamp, and a table of
+  /// [tableHeaders]/[tableRows] — but returns the raw bytes instead of
+  /// writing a file. Used directly by the Print Preview action (via the
+  /// `printing` package's native preview, which wants bytes, not a path)
+  /// so a report can be previewed without leaving a throwaway file behind
+  /// for every preview.
+  Future<Uint8List> buildReportPdfBytes({
     required String title,
     required List<List<String>> tableRows,
     required List<String> tableHeaders,
@@ -213,11 +218,28 @@ class ExportService {
       ),
     );
 
+    return doc.save();
+  }
+
+  /// Generic reusable PDF report builder: a MiarhPen-titled header with a
+  /// generated-date stamp, and a table of [tableHeaders]/[tableRows].
+  /// Saved under `exports/`. Returns the path.
+  Future<String> exportReportPdf({
+    required String title,
+    required List<List<String>> tableRows,
+    required List<String> tableHeaders,
+  }) async {
+    final bytes = await buildReportPdfBytes(
+      title: title,
+      tableRows: tableRows,
+      tableHeaders: tableHeaders,
+    );
+
     final dir = await _exportsDir();
     final safeTitle = title.replaceAll(RegExp(r'[^A-Za-z0-9_-]+'), '_');
     final path = p.join(dir.path, '${safeTitle}_${_timestamp()}.pdf');
     final file = File(path);
-    await file.writeAsBytes(await doc.save());
+    await file.writeAsBytes(bytes);
     return path;
   }
 

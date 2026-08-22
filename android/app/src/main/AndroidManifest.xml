@@ -31,12 +31,22 @@
          the OS and cannot be skipped without device-owner/root
          privileges, which this app deliberately doesn't request. -->
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+    <!-- usesCleartextTraffic: on top of the INTERNET permission above, apps
+         targeting API 28+ additionally have ALL plaintext (non-TLS) socket
+         traffic blocked by default — not just plain HTTP, raw TCP sockets
+         too. The "Sync to MySQL (Desktop)" feature connects to the MySQL
+         wire protocol directly (mysql1 package), which is unencrypted, so
+         without this the socket itself was silently refused even with the
+         INTERNET permission granted. This is scoped to the whole app
+         rather than one host because the MySQL server's address is
+         arbitrary user input (Settings > Data), not a fixed domain. -->
     <application
         android:label="MiarhPen"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
         android:allowBackup="false"
-        android:fullBackupContent="false">
+        android:fullBackupContent="false"
+        android:usesCleartextTraffic="true">
         <!-- MiarhPen holds a local financial database and must not be
              silently backed up to / restored from the user's Google
              account by Android's automatic Auto Backup feature. Without
