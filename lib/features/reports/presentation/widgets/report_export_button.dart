@@ -1,32 +1,47 @@
 import 'package:flutter/material.dart';
-import 'package:printing/printing.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../../../data_management/application/export_service.dart';
+import '../screens/print_preview_screen.dart';
 
 /// A pair of app bar actions dropped into every report screen — a
 /// **Download** button (PDF/Excel/CSV, saved then handed to the OS share
 /// sheet, which on Android includes "Save to Downloads"/"Save to
-/// Drive") and a **Print Preview** button (opens the native print
-/// preview straight from the report's PDF, no intermediate file to
-/// manage) — so both actions are consistent across every report without
-/// each screen reimplementing them.
+/// Drive") and a **Print Preview** button (a full-screen, pinch-zoomable
+/// preview of the report's PDF, with print/share built in) — so both
+/// actions are consistent across every report without each screen
+/// reimplementing them.
 ///
 /// Routing/report-agnostic: the report screen supplies its own [title]
 /// and a [rowsBuilder] that returns the current filtered data as plain
 /// string rows matching [headers] — this widget only handles the
-/// format choice, file generation, preview, and sharing.
+/// format choice, file generation, preview, and sharing. A report that
+/// also has its own summary box (e.g. Account Statement's "Eph Cash
+/// Summary": Beginning Balance / Current Balance / Total Cash In / Total
+/// Cash Out) can pass [summaryTitle] and [summaryBuilder] so that box is
+/// included in the PDF too, not just shown on screen.
 class ReportExportButton extends StatefulWidget {
   const ReportExportButton({
     super.key,
     required this.title,
     required this.headers,
     required this.rowsBuilder,
+    this.summaryTitle,
+    this.summaryBuilder,
   });
 
   final String title;
   final List<String> headers;
   final Future<List<List<String>>> Function() rowsBuilder;
+
+  /// Heading for the PDF's summary box, e.g. "Eph Cash Summary". Ignored
+  /// if [summaryBuilder] is null.
+  final String? summaryTitle;
+
+  /// Returns the summary box's label/value lines, e.g. `[('Beginning
+  /// Balance', '₱0.00'), ('Current Balance', '₱1,000.00'), ...]` — null
+  /// (the default) means this report has no summary box to include.
+  final Future<List<MapEntry<String, String>>> Function()? summaryBuilder;
 
   @override
   State<ReportExportButton> createState() => _ReportExportButtonState();
@@ -40,15 +55,22 @@ class _ReportExportButtonState extends State<ReportExportButton> {
     setState(() => _busy = true);
     try {
       final rows = await widget.rowsBuilder();
+      final summary = await widget.summaryBuilder?.call();
       final bytes = await _exportService.buildReportPdfBytes(
         title: widget.title,
         tableHeaders: widget.headers,
         tableRows: rows,
+        summaryTitle: widget.summaryTitle,
+        summaryRows: summary,
       );
-      await Printing.layoutPdf(
-        onLayout: (_) async => bytes,
-        name: widget.title,
-      );
+      if (mounted) {
+        await Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) =>
+                PrintPreviewScreen(title: widget.title, bytes: bytes),
+          ),
+        );
+      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(
@@ -67,10 +89,13 @@ class _ReportExportButtonState extends State<ReportExportButton> {
       final String path;
       switch (format) {
         case 'pdf':
+          final summary = await widget.summaryBuilder?.call();
           path = await _exportService.exportReportPdf(
             title: widget.title,
             tableHeaders: widget.headers,
             tableRows: rows,
+            summaryTitle: widget.summaryTitle,
+            summaryRows: summary,
           );
         case 'excel':
           path = await _exportService.exportGenericExcel(

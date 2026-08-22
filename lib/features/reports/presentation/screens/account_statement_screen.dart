@@ -86,6 +86,35 @@ class _AccountStatementScreenState
                   ],
               ];
             },
+            summaryTitle: statementAsync.value != null
+                ? '${statementAsync.value!.accountName} Summary'
+                : 'Account Summary',
+            summaryBuilder: () async {
+              final statement = await ref.read(
+                accountStatementProvider((
+                  accountId: widget.accountId,
+                  filter: _filter,
+                )).future,
+              );
+              return [
+                MapEntry(
+                  'Beginning Balance',
+                  CurrencyFormatter.format(statement.summary.beginningBalance),
+                ),
+                MapEntry(
+                  'Current Balance',
+                  CurrencyFormatter.format(statement.summary.endingBalance),
+                ),
+                MapEntry(
+                  'Total Cash In (Income)',
+                  CurrencyFormatter.format(statement.summary.totalCashIn),
+                ),
+                MapEntry(
+                  'Total Cash Out (Expense)',
+                  CurrencyFormatter.format(statement.summary.totalCashOut),
+                ),
+              ];
+            },
           ),
         ],
       ),

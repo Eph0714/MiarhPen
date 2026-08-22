@@ -157,16 +157,20 @@ class ExportService {
   }
 
   /// Builds the same MiarhPen-titled PDF used by [exportReportPdf] — a
-  /// header with a generated-date stamp, and a table of
-  /// [tableHeaders]/[tableRows] — but returns the raw bytes instead of
-  /// writing a file. Used directly by the Print Preview action (via the
-  /// `printing` package's native preview, which wants bytes, not a path)
-  /// so a report can be previewed without leaving a throwaway file behind
-  /// for every preview.
+  /// header with a generated-date stamp, a table of
+  /// [tableHeaders]/[tableRows], and (when given) a boxed summary section
+  /// below it, e.g. "Eph Cash Summary: Beginning Balance / Current
+  /// Balance / Total Cash In / Total Cash Out" — but returns the raw
+  /// bytes instead of writing a file. Used directly by the Print Preview
+  /// action (via the `printing` package's preview widget, which wants
+  /// bytes, not a path) so a report can be previewed without leaving a
+  /// throwaway file behind for every preview.
   Future<Uint8List> buildReportPdfBytes({
     required String title,
     required List<List<String>> tableRows,
     required List<String> tableHeaders,
+    String? summaryTitle,
+    List<MapEntry<String, String>>? summaryRows,
   }) async {
     final doc = pw.Document();
     final generatedAt = DateFormat(
@@ -214,6 +218,49 @@ class ExportService {
             headerDecoration: const pw.BoxDecoration(color: PdfColors.grey300),
             cellAlignment: pw.Alignment.centerLeft,
           ),
+          if (summaryRows != null && summaryRows.isNotEmpty) ...[
+            pw.SizedBox(height: 16),
+            pw.Container(
+              padding: const pw.EdgeInsets.all(10),
+              decoration: pw.BoxDecoration(
+                border: pw.Border.all(color: PdfColors.grey400),
+                borderRadius: const pw.BorderRadius.all(pw.Radius.circular(4)),
+              ),
+              child: pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.start,
+                children: [
+                  pw.Text(
+                    summaryTitle ?? 'Summary',
+                    style: pw.TextStyle(
+                      fontSize: 11,
+                      fontWeight: pw.FontWeight.bold,
+                    ),
+                  ),
+                  pw.SizedBox(height: 6),
+                  for (final entry in summaryRows)
+                    pw.Padding(
+                      padding: const pw.EdgeInsets.symmetric(vertical: 2),
+                      child: pw.Row(
+                        mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                        children: [
+                          pw.Text(
+                            entry.key,
+                            style: const pw.TextStyle(fontSize: 9),
+                          ),
+                          pw.Text(
+                            entry.value,
+                            style: pw.TextStyle(
+                              fontSize: 9,
+                              fontWeight: pw.FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ],
         ],
       ),
     );
@@ -222,17 +269,22 @@ class ExportService {
   }
 
   /// Generic reusable PDF report builder: a MiarhPen-titled header with a
-  /// generated-date stamp, and a table of [tableHeaders]/[tableRows].
-  /// Saved under `exports/`. Returns the path.
+  /// generated-date stamp, a table of [tableHeaders]/[tableRows], and an
+  /// optional boxed summary section. Saved under `exports/`. Returns the
+  /// path.
   Future<String> exportReportPdf({
     required String title,
     required List<List<String>> tableRows,
     required List<String> tableHeaders,
+    String? summaryTitle,
+    List<MapEntry<String, String>>? summaryRows,
   }) async {
     final bytes = await buildReportPdfBytes(
       title: title,
       tableRows: tableRows,
       tableHeaders: tableHeaders,
+      summaryTitle: summaryTitle,
+      summaryRows: summaryRows,
     );
 
     final dir = await _exportsDir();
