@@ -178,7 +178,17 @@ class _TransferMoneyScreenState extends ConsumerState<TransferMoneyScreen> {
               ),
               const SizedBox(height: AppSpacing.md),
               accountsAsync.when(
-                data: (accounts) {
+                data: (allAccounts) {
+                  // Debit cards mirror their linked bank account rather
+                  // than holding a balance of their own — transferring
+                  // to/from one directly instead of the bank account it's
+                  // linked to would silently leave that money out of
+                  // every balance-based dashboard figure. Still shown if
+                  // it's the account already on this transfer, so editing
+                  // an existing one doesn't blank out its selection.
+                  final accounts = allAccounts
+                      .where((a) => !a.isDebitCard || a.id == _fromAccountId)
+                      .toList();
                   final validIds = accounts.map((a) => a.id).toSet();
                   final fromValue = validIds.contains(_fromAccountId)
                       ? _fromAccountId
@@ -187,6 +197,10 @@ class _TransferMoneyScreenState extends ConsumerState<TransferMoneyScreen> {
                     initialValue: fromValue,
                     decoration: const InputDecoration(
                       labelText: 'From Account',
+                      helperText:
+                          'Debit cards aren\'t listed — use the '
+                          'linked bank account instead.',
+                      helperMaxLines: 2,
                     ),
                     items: accounts
                         .map(
@@ -209,14 +223,23 @@ class _TransferMoneyScreenState extends ConsumerState<TransferMoneyScreen> {
               ),
               const SizedBox(height: AppSpacing.md),
               accountsAsync.when(
-                data: (accounts) {
+                data: (allAccounts) {
+                  final accounts = allAccounts
+                      .where((a) => !a.isDebitCard || a.id == _toAccountId)
+                      .toList();
                   final validIds = accounts.map((a) => a.id).toSet();
                   final toValue = validIds.contains(_toAccountId)
                       ? _toAccountId
                       : null;
                   return DropdownButtonFormField<int>(
                     initialValue: toValue,
-                    decoration: const InputDecoration(labelText: 'To Account'),
+                    decoration: const InputDecoration(
+                      labelText: 'To Account',
+                      helperText:
+                          'Debit cards aren\'t listed — use the '
+                          'linked bank account instead.',
+                      helperMaxLines: 2,
+                    ),
                     items: accounts
                         .map(
                           (a) => DropdownMenuItem(

@@ -209,14 +209,36 @@ class _TransactionEntryFormState extends ConsumerState<TransactionEntryForm> {
               ),
               const SizedBox(height: AppSpacing.md),
               accountsAsync.when(
-                data: (accounts) {
+                data: (allAccounts) {
+                  // Debit cards hold no balance of their own — they mirror
+                  // their linked bank account (see Account.isDebitCard) —
+                  // so posting a transaction to one instead of the bank
+                  // account it's linked to silently left it out of every
+                  // balance-based dashboard figure (Total Available Funds,
+                  // Cash in Bank) even though Money IN/OUT still counted
+                  // it. Excluding debit cards here means there's only ever
+                  // one place to record against: the actual bank account.
+                  // Still shows the currently-assigned account even if
+                  // it's a debit card, so editing a transaction recorded
+                  // against one before this change doesn't blank out its
+                  // selection — but a debit card is never offered as a
+                  // choice for a new selection.
+                  final accounts = allAccounts
+                      .where((a) => !a.isDebitCard || a.id == _accountId)
+                      .toList();
                   final validIds = accounts.map((a) => a.id).toSet();
                   final value = validIds.contains(_accountId)
                       ? _accountId
                       : null;
                   return DropdownButtonFormField<int>(
                     initialValue: value,
-                    decoration: const InputDecoration(labelText: 'Account'),
+                    decoration: const InputDecoration(
+                      labelText: 'Account',
+                      helperText:
+                          'Debit cards aren\'t listed — select the bank '
+                          'account they\'re linked to instead.',
+                      helperMaxLines: 2,
+                    ),
                     items: accounts
                         .map(
                           (a) => DropdownMenuItem(
